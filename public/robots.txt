@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: https://sleep-test.org/sitemap.xml
+Sitemap: https://brain-test.org/sitemap.xml
