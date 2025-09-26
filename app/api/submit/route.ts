@@ -2,50 +2,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
 import { generateId } from "@/lib/id";
-import { BANK_VERSION, AnswerMap } from "@/lib/types";
-import { QUESTION_BANK } from "@/data/questions";
-import { computeAllServer } from "./util";
+import { ICAR16 } from "@/data/icar16";
+import { scoreICAR } from "@/lib/scoring";
 
 export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as { answers?: AnswerMap; lang?: string } | null;
+    const body = (await req.json()) as { answers?: Record<string, string>; lang?: string } | null;
 
-    // Robust henting av lang: godta hvilken som helst string, ellers fallback til "en"
     const langRaw = body?.lang;
     const lang = typeof langRaw === "string" && langRaw.trim() ? langRaw.trim() : "en";
 
-    const incomingAnswers = (body?.answers ?? {}) as AnswerMap;
-
-    // Whitelist: behold kun kjente likert-id'er og numeriske verdier
-    const knownLikert = new Set(
-      QUESTION_BANK.filter((q) => q.kind === "likert").map((q) => q.id)
-    );
-    const cleaned: AnswerMap = {};
-    for (const [k, v] of Object.entries(incomingAnswers)) {
-      if (knownLikert.has(k) && typeof v === "number") {
-        cleaned[k] = v as any;
-      }
+    const incoming = (body?.answers ?? {}) as Record<string, string>;
+    const validIds = new Set(ICAR16.map((q) => q.id));
+    const cleaned: Record<string, string> = {};
+    for (const [k, v] of Object.entries(incoming)) {
+      if (validIds.has(k) && typeof v === "string") cleaned[k] = v;
     }
 
-    const computed = await computeAllServer(cleaned);
+    const scored = scoreICAR(ICAR16, cleaned);
     const id = generateId(11);
 
-    // Persistér (kun likert-svar; ingen felt lenger)
     const doc = {
       id,
       createdAt: new Date().toISOString(),
-      v: BANK_VERSION,
-      lang,            // lagre det brukeren sendte (eller "en" hvis ikke oppgitt)
+      lang,
       answers: cleaned,
-      ...computed,
+      raw: scored.raw,
+      iq: scored.iq,
+      pct: scored.pct,
+      perItem: scored.perItem,
     };
 
     const col = await getCollection("results");
     await col.insertOne(doc);
 
-    return NextResponse.json({ id, ...computed }, { status: 200 });
+    return NextResponse.json({ id, ...doc }, { status: 200 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "submit_failed" }, { status: 500 });
