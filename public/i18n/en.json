@@ -1,19 +1,29 @@
 {
-  "site.title": "Free IQ Test (ICAR-based)",
-  "site.tagline": "A brief, public‑domain IQ estimate — multilingual and free.",
-  "cta.start": "Start the test",
-  "cta.continue": "Continue",
-  "cta.submit": "Finish and see result",
+  "site": {
+    "title": "Free IQ Test (ICAR-based)",
+    "tagline": "A brief, public-domain IQ estimate — multilingual and free."
+  },
+  "cta": {
+    "start": "Start the test",
+    "continue": "Continue",
+    "submit": "Finish and see result"
+  },
   "disclaimer": "This is a brief, non‑proctored screening using public‑domain items (ICAR). Scores are approximate and not a clinical or educational assessment.",
-  "icar.i1.prompt": "What comes next in the number series? 2, 4, 8, 16, ?",
-  "icar.i1.a": "18",
-  "icar.i1.b": "20",
-  "icar.i1.c": "24",
-  "icar.i1.d": "32",
-  "icar.i1.e": "36",
-  "icar.i1.f": "48",
-  "result.title": "Your IQ estimate",
-  "result.raw": "Raw score",
-  "result.iq": "Estimated IQ",
-  "result.share": "Share result link"
+  "icar": {
+    "i1": {
+      "prompt": "What comes next in the number series? 2, 4, 8, 16, ?",
+      "a": "18",
+      "b": "20",
+      "c": "24",
+      "d": "32",
+      "e": "36",
+      "f": "48"
+    }
+  },
+  "result": {
+    "title": "Your IQ estimate",
+    "raw": "Raw score",
+    "iq": "Estimated IQ",
+    "share": "Share result link"
+  }
 }

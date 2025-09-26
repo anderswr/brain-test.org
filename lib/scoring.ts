@@ -1,7 +1,7 @@
+
 // lib/scoring.ts
 import type { IQItem } from "@/data/icar16";
-
-export type Submission = Record<string, string>; // { [itemId]: choiceId }
+export type Submission = Record<string, string>;
 
 export function scoreICAR(items: IQItem[], submission: Submission) {
   let correct = 0;
@@ -12,10 +12,8 @@ export function scoreICAR(items: IQItem[], submission: Submission) {
     return { id: it.id, chosen, correct: it.correctId, isCorrect };
   });
   const raw = correct;
-  // Quick‑and‑dirty IQ estimate: linear transform to mean 100, SD 15 using max=16 baseline.
-  // This is NOT normed – include disclaimer for users.
   const pct = raw / Math.max(items.length, 1);
-  const z = (raw - 8) / 4; // assume mean=8, sd=4 for demonstration only
+  const z = (raw - 8) / 4; // demo baseline
   const iq = Math.round(100 + 15 * z);
   return { raw, iq, pct, perItem };
 }

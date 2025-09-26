@@ -1,4 +1,4 @@
-// lib/db.ts
+
 import { MongoClient, Db, Collection, Document } from "mongodb";
 
 let client: MongoClient | null = null;
@@ -15,8 +15,7 @@ export async function getDb(): Promise<Db> {
   return db;
 }
 
-// Merk: T må extende Document i mongodb v6-typene
-export async function getCollection<T extends Document = Document>(name: string): Promise<Collection<T>> {
-  const database = await getDb();
-  return database.collection<T>(name);
+export async function getCollection<T extends Document>(name: string) {
+  const d = await getDb();
+  return d.collection<T>(name) as Collection<T>;
 }
