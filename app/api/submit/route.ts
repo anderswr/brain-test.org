@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     const col = await getCollection("results");
     await col.insertOne(doc);
 
-    return NextResponse.json({ id, ...doc }, { status: 200 });
+return NextResponse.json(doc, { status: 200 });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "submit_failed" }, { status: 500 });
