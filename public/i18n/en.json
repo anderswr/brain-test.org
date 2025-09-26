@@ -8,7 +8,39 @@
     "continue": "Continue",
     "submit": "Finish and see result"
   },
-  "disclaimer": "This is a brief, non‑proctored screening using public‑domain items (ICAR). Scores are approximate and not a clinical or educational assessment.",
+  "disclaimer": "This is a short, non-proctored screening using public-domain items (ICAR). Scores are approximate and not a clinical or educational assessment.",
+  "ui": {
+    "nav": {
+      "home": "Home",
+      "result": "Result",
+      "compare": "Compare",
+      "articles": "Articles",
+      "about": "About"
+    },
+    "home": {
+      "tests_count_title": "Completed IQ tests",
+      "tests_count_caption": "People have used this free, anonymous tool."
+    },
+    "compare": {
+      "card": {
+        "title": "Retake & compare",
+        "text": "You get an ID after the test. Take it again later and compare what changed."
+      }
+    },
+    "icar": {
+      "card": {
+        "title": "Public-domain items (ICAR)",
+        "text": "Built on ICAR public-domain items. No account required, multilingual interface.",
+        "cta": "What is ICAR?"
+      }
+    }
+  },
+  "result": {
+    "title": "Your IQ estimate",
+    "raw": "Raw score",
+    "iq": "Estimated IQ",
+    "share": "Share result link"
+  },
   "icar": {
     "i1": {
       "prompt": "What comes next in the number series? 2, 4, 8, 16, ?",
@@ -20,10 +52,25 @@
       "f": "48"
     }
   },
-  "result": {
-    "title": "Your IQ estimate",
-    "raw": "Raw score",
-    "iq": "Estimated IQ",
-    "share": "Share result link"
+  "about": {
+    "title": "Created by DMZ DATA AS",
+    "intro": "brain-test.org is a free, multilingual IQ screening built in Porsgrunn, Norway. It uses public-domain ICAR items and stores only anonymized results.",
+    "contact": {
+      "title": "Contact",
+      "p1": "Responsible for brain-test.org is DMZ DATA AS. Contact point for privacy inquiries and general questions: post@dmz.no.",
+      "p2": "Learn more at <a href='https://www.dmz.no' target='_blank' rel='noopener'>www.dmz.no</a>."
+    }
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "p1": "We take privacy seriously. This policy explains how brain-test.org handles information. The site is designed to work without collecting personal data; results are stored under a random ID.",
+    "li1": "Data we process: We do not collect names, emails, or other directly identifying information. To display and remember results, a system-generated ID is stored together with a summary of answers and derived scores.",
+    "li2": "Purpose and legal basis: The purpose is to provide the service and improve its quality. The legal basis is legitimate interest (GDPR Art. 6(1)(f)) in operating a secure and functional solution without processing personal data.",
+    "li3": "Storage and deletion: Technical IDs and result summaries are stored only as long as necessary for the stated purpose. If you want a result removed, contact us at post@dmz.no with your result ID.",
+    "li4": "Sharing and processors: We do not sell or share data with third parties. If we use subcontractors (data processors) for hosting/operations, they are contractually bound to protect data and may not use it for their own purposes.",
+    "li5": "International transfers: Our hosting and database providers may process data in the EEA and/or other locations. We use standard safeguards (e.g., SCCs) where relevant.",
+    "li6": "Cookies and tracking: We do not use marketing cookies or third-party tracking scripts. If we introduce strictly necessary cookies (e.g., language preference), we will update this policy and request consent where required.",
+    "li7": "Security and logs: Technical logs may be processed for troubleshooting and security (e.g., abuse prevention). These logs do not include personal identifiers beyond what is necessary for safe operation.",
+    "li8": "Your rights and contact: For questions or deletion of a specific result ID, contact post@dmz.no. You may also lodge a complaint with the Norwegian Data Protection Authority (Datatilsynet). Significant changes to this policy will be published here."
   }
 }
