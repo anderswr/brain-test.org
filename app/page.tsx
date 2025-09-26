@@ -88,7 +88,7 @@ export default function Home() {
 
         {/* TRE KORT */}
         <section aria-label="IQ test features" style={{ marginTop: 16 }}>
-          <div className="grid-cards">
+          <div className="grid-cards" style={{ display: "grid", gap: 16, gridTemplateColumns: "repeat(3, minmax(0, 1fr))" }}>
             {/* Kort 1: Teller */}
             <article className="card" style={{ padding: 20 }}>
               <h2 style={{ marginTop: 0 }}>
@@ -160,6 +160,8 @@ export default function Home() {
         </section>
       </main>
 
+
+      
       <SiteFooter />
     </>
   );
