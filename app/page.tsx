@@ -15,10 +15,9 @@ export default function Home() {
   const [targetCount, setTargetCount] = React.useState<number | null>(null);
   const [displayCount, setDisplayCount] = React.useState<number>(0);
 
-  // Hent antall fullførte tester
+  // Hent antall fullførte tester fra /api/stats (fallback hvis ikke finnes)
   React.useEffect(() => {
     let canceled = false;
-
     async function fetchCount(): Promise<number | null> {
       try {
         const res = await fetch("/api/stats", { cache: "no-store" });
@@ -35,25 +34,18 @@ export default function Home() {
         return null;
       }
     }
-
     fetchCount().then((n) => {
       if (!canceled && typeof n === "number") setTargetCount(n);
     });
-
-    return () => {
-      canceled = true;
-    };
+    return () => { canceled = true; };
   }, []);
 
   // Myk opptelling 0 -> targetCount på ~0.8s
   React.useEffect(() => {
     if (targetCount == null) return;
-
     let start: number | null = null;
     const duration = 800; // ms
-    const from = 0;
-    const to = targetCount;
-
+    const from = 0, to = targetCount;
     const tick = (tNow: number) => {
       if (start == null) start = tNow;
       const p = Math.min(1, (tNow - start) / duration);
@@ -62,7 +54,6 @@ export default function Home() {
       setDisplayCount(val);
       if (p < 1) requestAnimationFrame(tick);
     };
-
     const raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [targetCount]);
@@ -70,56 +61,40 @@ export default function Home() {
   return (
     <>
       <SiteHeader />
-      <main className="container" style={{ flex: "1 1 auto" }}>
-        {/* Hero */}
-        <header className="card" style={{ padding: 24 }}>
-          <h1 style={{ margin: 0, fontSize: "1.8rem", fontWeight: 800 }}>
+
+      <main className="container page-main">
+        {/* HERO */}
+        <header className="panel head" style={{ padding: 24 }}>
+          <h1 className="hero-title">
             {t(dict, "site.title", "Free IQ Test (ICAR-based)")}
           </h1>
-          <p style={{ marginTop: 6, opacity: 0.8 }}>
+          <p className="hero-text">
             {t(
               dict,
               "site.tagline",
               "A brief, public-domain IQ estimate — multilingual and free."
             )}
           </p>
-          <p className="hr" />
-          <p className="muted" style={{ marginTop: 6, opacity: 0.75 }}>
-            {t(
-              dict,
-              "disclaimer",
-              "This is a short, non-proctored screening using public-domain items (ICAR). Scores are approximate and not a clinical or educational assessment."
-            )}
-          </p>
-          <div
-            style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}
-            aria-label="IQ test call to action"
-          >
-            <Link href="/test" className="btn">
+          <div className="row" style={{ marginTop: 12, flexWrap: "wrap", gap: 8 }}>
+            <Link href="/test" className="btn primary" aria-label="Start the IQ test">
               {t(dict, "cta.start", "Start the test")}
             </Link>
-            {/* Valgfritt: pek til et eksempel-resultat hvis du har en ID */}
-            {/* <Link href="/result/DEMORESULT" className="btn">
+            {/* Valgfritt: demo-resultatlenke om du har en ID */}
+            {/* <Link href="/result/DEMOID" className="btn">
               {t(dict, "result.share", "See sample result")}
             </Link> */}
           </div>
         </header>
 
-        {/* Tre informasjonskort */}
+        {/* TRE KORT */}
         <section aria-label="IQ test features" style={{ marginTop: 16 }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: 16,
-            }}
-          >
+          <div className="grid-cards">
             {/* Kort 1: Teller */}
             <article className="card" style={{ padding: 20 }}>
-              <h2 style={{ marginTop: 0, fontWeight: 700 }}>
+              <h2 style={{ marginTop: 0 }}>
                 {t(dict, "ui.home.tests_count_title", "Completed IQ tests")}
               </h2>
-              <div style={{ marginTop: 6 }}>
+              <div className="stack-2">
                 <div
                   style={{
                     fontSize: "2.2rem",
@@ -132,7 +107,7 @@ export default function Home() {
                 >
                   {targetCount == null ? "…" : displayCount.toLocaleString()}
                 </div>
-                <p className="muted" style={{ marginTop: 6, opacity: 0.75 }}>
+                <p className="muted">
                   {t(
                     dict,
                     "ui.home.tests_count_caption",
@@ -142,33 +117,29 @@ export default function Home() {
               </div>
             </article>
 
-            {/* Kort 2: Retest / sammenlikning (kan aktiveres når du lager /compare) */}
+            {/* Kort 2: Retake/Compare */}
             <article className="card" style={{ padding: 20 }}>
-              <h2 style={{ marginTop: 0, fontWeight: 700 }}>
+              <h2 style={{ marginTop: 0 }}>
                 {t(dict, "ui.compare.card.title", "Retake & compare")}
               </h2>
-              <p className="muted" style={{ opacity: 0.8 }}>
+              <p className="muted">
                 {t(
                   dict,
                   "ui.compare.card.text",
                   "You get an ID after the test. Take it again later and compare what changed."
                 )}
               </p>
-              <Link
-                href="/test"
-                className="btn"
-                aria-label="Retake the IQ test"
-              >
+              <Link href="/test" className="btn" aria-label="Retake the IQ test">
                 {t(dict, "ui.nav.compare", "Retake")}
               </Link>
             </article>
 
-            {/* Kort 3: ICAR / public domain */}
+            {/* Kort 3: ICAR/public domain */}
             <article className="card" style={{ padding: 20 }}>
-              <h2 style={{ marginTop: 0, fontWeight: 700 }}>
+              <h2 style={{ marginTop: 0 }}>
                 {t(dict, "ui.icar.card.title", "Public-domain items (ICAR)")}
               </h2>
-              <p className="muted" style={{ opacity: 0.8 }}>
+              <p className="muted">
                 {t(
                   dict,
                   "ui.icar.card.text",
@@ -186,16 +157,9 @@ export default function Home() {
               </a>
             </article>
           </div>
-
-          <style jsx>{`
-            @media (max-width: 980px) {
-              div[style*="grid-template-columns: repeat(3, 1fr)"] {
-                grid-template-columns: 1fr !important;
-              }
-            }
-          `}</style>
         </section>
       </main>
+
       <SiteFooter />
     </>
   );
