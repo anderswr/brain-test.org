@@ -10,5 +10,5 @@
     "APP_URL": "@app-url",
     "NEXT_PUBLIC_DEFAULT_LOCALE": "en",
     "NEXT_PUBLIC_SUPPORTED_LOCALES": "en,no"
-  },
+  }
 }
