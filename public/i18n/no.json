@@ -1,0 +1,19 @@
+{
+  "site.title": "Gratis IQ‑test (ICAR-basert)",
+  "site.tagline": "En kort, offentlig domenetest — flerspråklig og gratis.",
+  "cta.start": "Start testen",
+  "cta.continue": "Fortsett",
+  "cta.submit": "Fullfør og se resultat",
+  "disclaimer": "Dette er en kort, uovervåket screening med oppgaver i offentlig domene (ICAR). Resultatet er omtrentlig og ikke en klinisk eller pedagogisk vurdering.",
+  "icar.i1.prompt": "Hva kommer neste i tallrekken? 2, 4, 8, 16, ?",
+  "icar.i1.a": "18",
+  "icar.i1.b": "20",
+  "icar.i1.c": "24",
+  "icar.i1.d": "32",
+  "icar.i1.e": "36",
+  "icar.i1.f": "48",
+  "result.title": "Din IQ‑estimat",
+  "result.raw": "Råskår",
+  "result.iq": "Estimert IQ",
+  "result.share": "Del resultatlenke"
+}
