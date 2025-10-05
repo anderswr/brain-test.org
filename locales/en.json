@@ -104,4 +104,31 @@
     "audience": "Suitable for ages 14 and up, for educational, personal, or HR screening use. No identifying data is stored — only an anonymous ID for comparison over time.",
     "limitations": "This test is not a substitute for professional psychometric assessment. Environmental factors, mood, and language proficiency can affect results."
   }
+},
+"iq_explainer": {
+  "title": "How your IQ estimate is calculated",
+  "intro": "This free assessment uses open-source, research-based methods to approximate general cognitive ability (g). It is designed for educational, self-assessment, and research purposes — not as a clinical or hiring diagnostic. However, it follows psychometric principles comparable to those used in standardized instruments.",
+  "method": {
+    "heading": "Calculation method",
+    "p1": "Each question contributes a raw accuracy score (correct or partial credit). These scores are weighted by category reliability and combined across five core domains: Reasoning, Math, Verbal, Spatial, and Memory.",
+    "p2": "The total is converted into a standardized score (Z-score) using the mean (μ) and standard deviation (σ) derived from pilot norm data. The Z-score is then mapped to an IQ scale where Mean = 100 and SD = 15, as defined in modern psychometric standards.",
+    "p3": "A 95% confidence interval (CI) is shown to reflect measurement precision — typically ±6 IQ points based on test–retest reliability and the number of subtests."
+  },
+  "theory": {
+    "heading": "Psychometric theory and references",
+    "p1": "The scoring is aligned with classical test theory (CTT) and item response theory (IRT) concepts used in the development of validated IQ instruments. Items were inspired by public-domain tasks from the International Cognitive Ability Resource (ICAR; Condon & Revelle, 2014) and related reasoning paradigms in the Cattell–Horn–Carroll model.",
+    "p2": "The interpretation follows normal-distribution conventions used in major intelligence scales such as the Wechsler Adult Intelligence Scale (WAIS-IV), Stanford–Binet, and Raven’s Advanced Progressive Matrices.",
+    "p3": "Sources: Condon, D. M., & Revelle, W. (2014). The International Cognitive Ability Resource: Development and initial validation of an open-source, public-domain measure. *Intelligence, 43*, 52–64. doi:10.1016/j.intell.2014.01.004. — Wechsler, D. (2008). *WAIS–IV Technical and Interpretive Manual.*"
+  },
+  "audience": {
+    "heading": "For educators, students, and employers",
+    "p1": "The structure is intentionally balanced: abstract reasoning, applied numeracy, language comprehension, visual–spatial reasoning, and working memory. This allows use in classrooms (ages 14+), career training, or pre-employment aptitude screening.",
+    "p2": "Teachers can discuss strengths and learning profiles using the category results. Employers and trainees may interpret it as an indicator of general problem-solving efficiency rather than fixed intelligence."
+  },
+  "limitations": {
+    "heading": "Interpretation and limitations",
+    "p1": "Scores are approximate and depend on test conditions, motivation, and familiarity with similar puzzles. Repeated use may slightly raise performance due to learning effects.",
+    "p2": "This assessment is anonymous, educational, and non-diagnostic. It does not replace standardized testing administered under controlled conditions by qualified psychologists."
+  },
+  "summary": "In short: the test uses research-based, standardized methods (mean 100, SD 15) to approximate general cognitive ability. It is suitable for education, research, and self-understanding — presented with transparency and respect for scientific validity."
 }
