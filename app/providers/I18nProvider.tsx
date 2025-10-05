@@ -3,39 +3,35 @@ import * as React from "react";
 
 export type Dict = Record<string, any>;
 
-/** Laster og slår sammen alle JSON-filer i locales/[lang]/ */
+/** Dynamisk lasting og sammenslåing av alle JSON-filer for valgt språk */
 async function loadDict(lang: string): Promise<Dict> {
-  try {
-    // Dynamisk import av ALLE JSON-filer i valgt språk
-    const modules = import.meta.glob(`/app/../locales/${lang}/*.json`);
+  const files = [
+    "en", // hovedfil (ui, site, nav, osv.)
+    "reasoning",
+    "math",
+    "verbal",
+    "spatial",
+    "memory",
+  ];
 
-    const dicts = await Promise.all(
-      Object.values(modules).map(async (importer: any) => {
-        const mod = await importer();
-        return mod.default || mod;
-      })
-    );
+  const dict: Dict = {};
 
-    // Slå sammen alle ordbøkene
-    return Object.assign({}, ...dicts);
-  } catch (err) {
-    console.warn(`[i18n] Failed to load locale '${lang}', falling back to 'en'`, err);
-
-    // Fallback til engelsk
+  for (const file of files) {
     try {
-      const fallbackModules = import.meta.glob(`/app/../locales/en/*.json`);
-      const dicts = await Promise.all(
-        Object.values(fallbackModules).map(async (importer: any) => {
-          const mod = await importer();
-          return mod.default || mod;
-        })
-      );
-      return Object.assign({}, ...dicts);
-    } catch (fallbackErr) {
-      console.error("[i18n] Fallback load failed:", fallbackErr);
-      return {};
+      const mod = await import(`@/locales/${lang}/${file}.json`);
+      Object.assign(dict, mod.default || mod);
+    } catch (err) {
+      console.warn(`[i18n] Missing or invalid file '${file}.json' for ${lang}, skipping.`);
     }
   }
+
+  // Hvis språket feilet totalt, last engelsk fallback
+  if (Object.keys(dict).length === 0 && lang !== "en") {
+    console.warn(`[i18n] Falling back to English.`);
+    return await loadDict("en");
+  }
+
+  return dict;
 }
 
 /** Hook for å hente og bytte språk */
