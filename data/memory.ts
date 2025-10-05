@@ -216,7 +216,7 @@ export const MEMORY_QUESTIONS: Question[] = [
 // --- Answer key (for programmatic scoring) ---
 export const ANSWER_KEY_MEMORY: Record<string, number> = Object.fromEntries(
   MEMORY_QUESTIONS.map((q) => [q.id, q.correctIndex ?? -1])
-);  },
+);
   {
     id: "m6",
     kind: "multiple",
