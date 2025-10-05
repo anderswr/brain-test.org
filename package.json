@@ -15,7 +15,9 @@
     "@vercel/analytics": "^1.0.0",
     "recharts": "^2.12.7",
     "framer-motion": "^11.0.0",
-    "@radix-ui/react-progress": "^1.0.3"
+    "@radix-ui/react-progress": "^1.0.3",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
