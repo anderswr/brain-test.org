@@ -1,0 +1,125 @@
+{
+  "category": {
+    "spatial": {
+      "name": "Spatial reasoning",
+      "desc": "Pattern completion, 2D and 3D visualization, rotation, and symmetry."
+    }
+  },
+  "q": {
+    "spatial": {
+      "matrix_01": "Select the shape that completes the pattern.",
+      "matrix_01.a": "Option A",
+      "matrix_01.b": "Option B",
+      "matrix_01.c": "Option C",
+      "matrix_01.d": "Option D",
+      "matrix_01.alt": "3×3 grid with geometric figures following a rotation and shading pattern.",
+
+      "matrix_02": "Choose the missing piece in this visual matrix.",
+      "matrix_02.a": "Option A",
+      "matrix_02.b": "Option B",
+      "matrix_02.c": "Option C",
+      "matrix_02.d": "Option D",
+      "matrix_02.alt": "Pattern grid where shapes rotate 90° across rows.",
+
+      "rotation_03": "Identify which figure is a 180° rotation of the sample.",
+      "rotation_03.a": "Top-left",
+      "rotation_03.b": "Top-right",
+      "rotation_03.c": "Bottom-left",
+      "rotation_03.d": "Bottom-right",
+      "rotation_03.alt": "Four rotated triangles; one matches original after 180° turn.",
+
+      "rotation_04": "Find the correctly rotated version.",
+      "rotation_04.a": "A",
+      "rotation_04.b": "B",
+      "rotation_04.c": "C",
+      "rotation_04.d": "D",
+      "rotation_04.alt": "Square with arrow rotated various directions.",
+
+      "mirror_05": "Which option shows the mirror image of the figure?",
+      "mirror_05.a": "A",
+      "mirror_05.b": "B",
+      "mirror_05.c": "C",
+      "mirror_05.d": "D",
+      "mirror_05.alt": "Figure with mirrored triangle arrangement.",
+
+      "mirror_06": "Choose the correct horizontal mirror reflection.",
+      "mirror_06.a": "A",
+      "mirror_06.b": "B",
+      "mirror_06.c": "C",
+      "mirror_06.d": "D",
+      "mirror_06.alt": "Mirror versions of a letter pattern; select true reflection.",
+
+      "cube_07": "Which cube can be formed from the unfolded net?",
+      "cube_07.a": "Cube A",
+      "cube_07.b": "Cube B",
+      "cube_07.c": "Cube C",
+      "cube_07.d": "Cube D",
+      "cube_07.alt": "Cube net with six faces labeled; identify valid folding result.",
+
+      "cube_08": "Find cube identical to the unfolded net.",
+      "cube_08.a": "A",
+      "cube_08.b": "B",
+      "cube_08.c": "C",
+      "cube_08.d": "D",
+      "cube_08.alt": "Different cube views showing symbols; choose matching layout.",
+
+      "3d_09": "Which 3D object matches the given orthographic views?",
+      "3d_09.a": "A",
+      "3d_09.b": "B",
+      "3d_09.c": "C",
+      "3d_09.d": "D",
+      "3d_09.alt": "Three orthogonal projections and four cube structures; find match.",
+
+      "3d_10": "Select the solid formed by these projections.",
+      "3d_10.a": "A",
+      "3d_10.b": "B",
+      "3d_10.c": "C",
+      "3d_10.d": "D",
+      "3d_10.alt": "Top, front, side view of cube stack.",
+
+      "fold_11": "After folding the paper along lines, which pattern appears?",
+      "fold_11.a": "A",
+      "fold_11.b": "B",
+      "fold_11.c": "C",
+      "fold_11.d": "D",
+      "fold_11.alt": "Paper folding and hole-punch diagram.",
+
+      "fold_12": "Predict the resulting pattern after folding and cutting.",
+      "fold_12.a": "A",
+      "fold_12.b": "B",
+      "fold_12.c": "C",
+      "fold_12.d": "D",
+      "fold_12.alt": "Folded square paper cut pattern; find unfolded result.",
+
+      "compose_13": "Which shape can be built using all pieces shown?",
+      "compose_13.a": "A",
+      "compose_13.b": "B",
+      "compose_13.c": "C",
+      "compose_13.d": "D",
+      "compose_13.alt": "Tangram-like puzzle showing composite figure options.",
+
+      "compose_14": "Find the image showing how the pieces combine.",
+      "compose_14.a": "A",
+      "compose_14.b": "B",
+      "compose_14.c": "C",
+      "compose_14.d": "D",
+      "compose_14.alt": "Block pieces joined to form larger square shape.",
+
+      "matrix_15": "Identify which completes the pattern sequence.",
+      "matrix_15.a": "A",
+      "matrix_15.b": "B",
+      "matrix_15.c": "C",
+      "matrix_15.d": "D",
+      "matrix_15.alt": "Grid where each row changes color and rotation progressively.",
+
+      "matrix_16": "Pick missing figure following shape-count logic.",
+      "matrix_16.a": "A",
+      "matrix_16.b": "B",
+      "matrix_16.c": "C",
+      "matrix_16.d": "D",
+      "matrix_16.alt": "3×3 matrix of circle–square combinations.",
+
+      "auto_common": "Auto-generated visual pattern tasks (s17–s40) each follow same logic: complete, rotate, or mirror image based on the grid rules."
+    }
+  }
+}

@@ -1,4 +1,3 @@
-// app/result/page.tsx
 "use client";
 
 import * as React from "react";
@@ -13,43 +12,31 @@ export default function ResultIndex() {
   const [id, setId] = React.useState("");
   const router = useRouter();
 
-  function openResult() {
-    if (id) router.push(`/result/${id}`);
-  }
-
   return (
     <div className="app-shell">
       <SiteHeader />
-      <main className="page-main">
-        <div className="container">
-          <article className="panel head prose">
-            <h1>{t(dict, "result.title", "Result")}</h1>
-            <p className="muted">
-              {t(
-                dict,
-                "result.lookup_hint",
-                "Paste your ID below to view your report."
-              )}
-            </p>
-
-            <div className="row mt-6" style={{ gap: 8 }}>
-              <input
-                className="btn"
-                style={{ flex: 1, textAlign: "left" }}
-                placeholder={t(dict, "result.id_placeholder", "Your ID")}
-                value={id}
-                onChange={(e) => setId(e.target.value.trim())}
-                aria-label={t(dict, "result.id_placeholder", "Your ID")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") openResult();
-                }}
-              />
-              <button className="btn primary" onClick={openResult}>
-                {t(dict, "common.read", "Read")}
-              </button>
-            </div>
-          </article>
-        </div>
+      <main className="container page-main">
+        <section className="panel head p-6">
+          <h1>{t(dict, "ui.result.title", "Your IQ Result")}</h1>
+          <p className="muted">
+            {t(dict, "ui.result.lookup_hint", "Paste your test ID to open your IQ report.")}
+          </p>
+          <div className="row" style={{ gap: 8, marginTop: 12 }}>
+            <input
+              className="btn"
+              style={{ flex: 1, textAlign: "left" }}
+              placeholder={t(dict, "ui.result.id_placeholder", "Your ID")}
+              value={id}
+              onChange={(e) => setId(e.target.value.trim())}
+            />
+            <button
+              className="btn primary"
+              onClick={() => id && router.push(`/result/${id}`)}
+            >
+              {t(dict, "ui.common.read", "Read")}
+            </button>
+          </div>
+        </section>
       </main>
       <SiteFooter />
     </div>

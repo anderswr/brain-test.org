@@ -1,22 +1,23 @@
-
 "use client";
 import * as React from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
-import { ICAR16 } from "@/data/icar16";
+import { QUESTION_BANK } from "@/data/question_index";
+import { Question } from "@/lib/types";
 
 export default function TestPage() {
   const { dict, lang } = useI18n();
   const [idx, setIdx] = React.useState(0);
-  const [answers, setAnswers] = React.useState<Record<string,string>>({});
+  const [answers, setAnswers] = React.useState<Record<string, any>>({});
   const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string|null>(null);
-  const item = ICAR16[idx];
+  const [error, setError] = React.useState<string | null>(null);
 
-  function setChoice(choiceId: string) {
-    setAnswers((a) => ({ ...a, [item.id]: choiceId }));
+  const item = QUESTION_BANK[idx] as Question;
+
+  function setChoice(choice: any) {
+    setAnswers((a) => ({ ...a, [item.id]: choice }));
   }
 
   async function submit() {
@@ -37,39 +38,119 @@ export default function TestPage() {
     }
   }
 
+  /** Render multiple/visual/sequence question appropriately */
+  function renderQuestion(q: Question) {
+    // 🔹 Multiple-choice og visual
+    if ("optionsKey" in q) {
+      return (
+        <div style={{ display: "grid", gap: 8 }}>
+          {q.optionsKey.map((key: string, i: number) => (
+            <label
+              key={i}
+              className="card"
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+              }}
+            >
+              <input
+                type="radio"
+                name={`q-${q.id}`}
+                checked={answers[q.id] === key}
+                onChange={() => setChoice(key)}
+              />
+              <span>{t(dict, key)}</span>
+            </label>
+          ))}
+        </div>
+      );
+    }
+
+    // 🔹 Sequence-type (rekkefølgespørsmål)
+    if ("itemsKey" in q) {
+      return (
+        <div style={{ display: "grid", gap: 8 }}>
+          {q.itemsKey.map((key: string, i: number) => (
+            <div
+              key={i}
+              className="card"
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+              }}
+            >
+              {t(dict, key)}
+            </div>
+          ))}
+          <p className="muted text-sm">
+            (Sequence questions are not interactive yet)
+          </p>
+        </div>
+      );
+    }
+
+    // 🔹 Hvis ukjent type
+    return <p>Unsupported question type</p>;
+  }
+
   return (
     <div>
       <SiteHeader />
-      <main style={{marginTop:16}}>
+      <main style={{ marginTop: 16 }}>
         <div className="card">
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center", marginBottom:12}}>
-            <div style={{fontWeight:600}}>{t(dict,item.promptKey)}</div>
-            <div style={{opacity:.6, fontSize:12}}>{idx+1} / {ICAR16.length}</div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
+          >
+            <div style={{ fontWeight: 600 }}>{t(dict, item.textKey)}</div>
+            <div style={{ opacity: 0.6, fontSize: 12 }}>
+              {idx + 1} / {QUESTION_BANK.length}
+            </div>
           </div>
 
-          <div style={{display:"grid", gap:8}}>
-            {item.choices.map((c) => (
-              <label key={c.id} className="card" style={{padding:12, display:"flex", gap:8, alignItems:"center"}}>
-                <input type="radio" name={`q-${item.id}`} checked={answers[item.id]===c.id} onChange={()=>setChoice(c.id)} />
-                <span>{t(dict,c.textKey)}</span>
-              </label>
-            ))}
-          </div>
+          {/* Dynamisk renderer basert på question type */}
+          {renderQuestion(item)}
 
-          <div style={{display:"flex", gap:8, marginTop:12}}>
-            <button className="btn" onClick={()=>setIdx((i)=>Math.max(0,i-1))} disabled={idx===0 || submitting}>← {t(dict,"cta.continue","Continue")}</button>
-            {idx < ICAR16.length-1 ? (
-              <button className="btn" onClick={()=>setIdx((i)=>Math.min(ICAR16.length-1,i+1))} disabled={!answers[item.id] || submitting}>
-                {t(dict,"cta.continue","Continue")} →
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button
+              className="btn"
+              onClick={() => setIdx((i) => Math.max(0, i - 1))}
+              disabled={idx === 0 || submitting}
+            >
+              ← {t(dict, "cta.continue", "Back")}
+            </button>
+            {idx < QUESTION_BANK.length - 1 ? (
+              <button
+                className="btn"
+                onClick={() => setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))}
+                disabled={!answers[item.id] || submitting}
+              >
+                {t(dict, "cta.continue", "Continue")} →
               </button>
             ) : (
-              <button className="btn" onClick={submit} disabled={Object.keys(answers).length!==ICAR16.length || submitting}>
-                {t(dict,"cta.submit","Finish")} ✓
+              <button
+                className="btn"
+                onClick={submit}
+                disabled={
+                  Object.keys(answers).length !== QUESTION_BANK.length || submitting
+                }
+              >
+                {t(dict, "cta.submit", "Finish and see result")} ✓
               </button>
             )}
           </div>
 
-          {error && <p style={{color:"#f87171", marginTop:8, fontSize:14}}>{error}</p>}
+          {error && (
+            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>{error}</p>
+          )}
         </div>
       </main>
       <SiteFooter />
