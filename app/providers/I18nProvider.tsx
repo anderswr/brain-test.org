@@ -3,32 +3,30 @@ import * as React from "react";
 
 export type Dict = Record<string, any>;
 
-/** Dynamisk lasting og sammenslåing av alle JSON-filer i locales/[lang]/ */
+/** Laster og slår sammen alle JSON-filer i locales/[lang]/ */
 async function loadDict(lang: string): Promise<Dict> {
   try {
-    // Dynamisk import av ALLE JSON-filer i språk-mappen
-    const context = require.context(
-      `@/locales/${lang}`,
-      false, // ikke rekursivt
-      /\.json$/
-    );
+    // Dynamisk import av ALLE JSON-filer i valgt språk
+    const modules = import.meta.glob(`/app/../locales/${lang}/*.json`);
 
     const dicts = await Promise.all(
-      context.keys().map(async (key) => {
-        const mod = await context(key);
+      Object.values(modules).map(async (importer: any) => {
+        const mod = await importer();
         return mod.default || mod;
       })
     );
 
-    // Slå sammen alle delene
+    // Slå sammen alle ordbøkene
     return Object.assign({}, ...dicts);
   } catch (err) {
     console.warn(`[i18n] Failed to load locale '${lang}', falling back to 'en'`, err);
+
+    // Fallback til engelsk
     try {
-      const fallbackContext = require.context(`@/locales/en`, false, /\.json$/);
+      const fallbackModules = import.meta.glob(`/app/../locales/en/*.json`);
       const dicts = await Promise.all(
-        fallbackContext.keys().map(async (key) => {
-          const mod = await fallbackContext(key);
+        Object.values(fallbackModules).map(async (importer: any) => {
+          const mod = await importer();
           return mod.default || mod;
         })
       );
@@ -40,7 +38,7 @@ async function loadDict(lang: string): Promise<Dict> {
   }
 }
 
-/** Hook for å hente språk og dictionary */
+/** Hook for å hente og bytte språk */
 export function useI18n() {
   const [lang, setLang] = React.useState<string>("en");
   const [dict, setDict] = React.useState<Dict>({});
