@@ -13,9 +13,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.matrix_01.a",
       "q.spatial.matrix_01.b",
       "q.spatial.matrix_01.c",
-      "q.spatial.matrix_01.d"
+      "q.spatial.matrix_01.d",
     ],
-    correctIndex: 2
+    correctIndex: 2,
   },
   {
     id: "s2",
@@ -27,9 +27,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.matrix_02.a",
       "q.spatial.matrix_02.b",
       "q.spatial.matrix_02.c",
-      "q.spatial.matrix_02.d"
+      "q.spatial.matrix_02.d",
     ],
-    correctIndex: 1
+    correctIndex: 1,
   },
 
   // --- 2D rotation ---
@@ -43,9 +43,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.rotation_03.a",
       "q.spatial.rotation_03.b",
       "q.spatial.rotation_03.c",
-      "q.spatial.rotation_03.d"
+      "q.spatial.rotation_03.d",
     ],
-    correctIndex: 0
+    correctIndex: 0,
   },
   {
     id: "s4",
@@ -57,9 +57,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.rotation_04.a",
       "q.spatial.rotation_04.b",
       "q.spatial.rotation_04.c",
-      "q.spatial.rotation_04.d"
+      "q.spatial.rotation_04.d",
     ],
-    correctIndex: 3
+    correctIndex: 3,
   },
 
   // --- Mirror reflection ---
@@ -73,9 +73,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.mirror_05.a",
       "q.spatial.mirror_05.b",
       "q.spatial.mirror_05.c",
-      "q.spatial.mirror_05.d"
+      "q.spatial.mirror_05.d",
     ],
-    correctIndex: 1
+    correctIndex: 1,
   },
   {
     id: "s6",
@@ -87,9 +87,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.mirror_06.a",
       "q.spatial.mirror_06.b",
       "q.spatial.mirror_06.c",
-      "q.spatial.mirror_06.d"
+      "q.spatial.mirror_06.d",
     ],
-    correctIndex: 0
+    correctIndex: 0,
   },
 
   // --- Cube folding ---
@@ -103,9 +103,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.cube_07.a",
       "q.spatial.cube_07.b",
       "q.spatial.cube_07.c",
-      "q.spatial.cube_07.d"
+      "q.spatial.cube_07.d",
     ],
-    correctIndex: 3
+    correctIndex: 3,
   },
   {
     id: "s8",
@@ -117,9 +117,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.cube_08.a",
       "q.spatial.cube_08.b",
       "q.spatial.cube_08.c",
-      "q.spatial.cube_08.d"
+      "q.spatial.cube_08.d",
     ],
-    correctIndex: 2
+    correctIndex: 2,
   },
 
   // --- 3D spatial visualization ---
@@ -133,9 +133,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.3d_09.a",
       "q.spatial.3d_09.b",
       "q.spatial.3d_09.c",
-      "q.spatial.3d_09.d"
+      "q.spatial.3d_09.d",
     ],
-    correctIndex: 1
+    correctIndex: 1,
   },
   {
     id: "s10",
@@ -147,9 +147,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.3d_10.a",
       "q.spatial.3d_10.b",
       "q.spatial.3d_10.c",
-      "q.spatial.3d_10.d"
+      "q.spatial.3d_10.d",
     ],
-    correctIndex: 0
+    correctIndex: 0,
   },
 
   // --- Paper folding ---
@@ -163,9 +163,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.fold_11.a",
       "q.spatial.fold_11.b",
       "q.spatial.fold_11.c",
-      "q.spatial.fold_11.d"
+      "q.spatial.fold_11.d",
     ],
-    correctIndex: 2
+    correctIndex: 2,
   },
   {
     id: "s12",
@@ -177,9 +177,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.fold_12.a",
       "q.spatial.fold_12.b",
       "q.spatial.fold_12.c",
-      "q.spatial.fold_12.d"
+      "q.spatial.fold_12.d",
     ],
-    correctIndex: 3
+    correctIndex: 3,
   },
 
   // --- Shape composition ---
@@ -193,9 +193,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.compose_13.a",
       "q.spatial.compose_13.b",
       "q.spatial.compose_13.c",
-      "q.spatial.compose_13.d"
+      "q.spatial.compose_13.d",
     ],
-    correctIndex: 1
+    correctIndex: 1,
   },
   {
     id: "s14",
@@ -207,9 +207,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.compose_14.a",
       "q.spatial.compose_14.b",
       "q.spatial.compose_14.c",
-      "q.spatial.compose_14.d"
+      "q.spatial.compose_14.d",
     ],
-    correctIndex: 0
+    correctIndex: 0,
   },
 
   // --- Pattern sequences ---
@@ -223,9 +223,9 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.matrix_15.a",
       "q.spatial.matrix_15.b",
       "q.spatial.matrix_15.c",
-      "q.spatial.matrix_15.d"
+      "q.spatial.matrix_15.d",
     ],
-    correctIndex: 3
+    correctIndex: 3,
   },
   {
     id: "s16",
@@ -237,16 +237,15 @@ export const SPATIAL_QUESTIONS: Question[] = [
       "q.spatial.matrix_16.a",
       "q.spatial.matrix_16.b",
       "q.spatial.matrix_16.c",
-      "q.spatial.matrix_16.d"
+      "q.spatial.matrix_16.d",
     ],
-    correctIndex: 2
+    correctIndex: 2,
   },
 
-  // --- Continue visual challenges up to 40 (mirroring above pattern) ---
-  // to keep this concise, all follow same data structure: matrix/visual types
+  // --- Auto-generated continuation ---
   ...Array.from({ length: 24 }, (_, i) => ({
     id: `s${17 + i}`,
-    kind: i % 2 === 0 ? "visual" : "matrix",
+    kind: (i % 2 === 0 ? "visual" : "matrix") as "visual" | "matrix",
     category: CategoryId.Spatial,
     textKey: `q.spatial.auto_${17 + i}`,
     image: `/assets/img/q/spatial/s${17 + i}.png`,
@@ -254,8 +253,13 @@ export const SPATIAL_QUESTIONS: Question[] = [
       `q.spatial.auto_${17 + i}.a`,
       `q.spatial.auto_${17 + i}.b`,
       `q.spatial.auto_${17 + i}.c`,
-      `q.spatial.auto_${17 + i}.d`
+      `q.spatial.auto_${17 + i}.d`,
     ],
-    correctIndex: (i * 3) % 4
-  }))
+    correctIndex: (i * 3) % 4,
+  })),
 ];
+
+// --- Answer key (for programmatic scoring) ---
+export const ANSWER_KEY_SPATIAL: Record<string, number> = Object.fromEntries(
+  SPATIAL_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
+);
