@@ -2,7 +2,7 @@
 import { ANSWER_KEY, CATEGORY_INDEX } from "@/data/question_index";
 import { CategoryId, AnswerMap } from "@/lib/types";
 
-interface IQResult {
+export interface IQResult {   // 👈 legg til 'export' her
   totalCorrect: number;
   totalQuestions: number;
   percent: number;
