@@ -4,18 +4,20 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
-import { QUESTION_BANK } from "@/data/question_index"; // ✅ riktig import
+import { QUESTION_BANK } from "@/data/question_index";
+import { Question } from "@/lib/types";
 
 export default function TestPage() {
   const { dict, lang } = useI18n();
   const [idx, setIdx] = React.useState(0);
-  const [answers, setAnswers] = React.useState<Record<string, string>>({});
+  const [answers, setAnswers] = React.useState<Record<string, any>>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const item = QUESTION_BANK[idx];
 
-  function setChoice(choiceId: string) {
-    setAnswers((a) => ({ ...a, [item.id]: choiceId }));
+  const item = QUESTION_BANK[idx] as Question;
+
+  function setChoice(choice: any) {
+    setAnswers((a) => ({ ...a, [item.id]: choice }));
   }
 
   async function submit() {
@@ -34,6 +36,65 @@ export default function TestPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  /** Render multiple/visual/sequence question appropriately */
+  function renderQuestion(q: Question) {
+    // 🔹 Multiple-choice og visual
+    if ("optionsKey" in q) {
+      return (
+        <div style={{ display: "grid", gap: 8 }}>
+          {q.optionsKey.map((key: string, i: number) => (
+            <label
+              key={i}
+              className="card"
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+              }}
+            >
+              <input
+                type="radio"
+                name={`q-${q.id}`}
+                checked={answers[q.id] === key}
+                onChange={() => setChoice(key)}
+              />
+              <span>{t(dict, key)}</span>
+            </label>
+          ))}
+        </div>
+      );
+    }
+
+    // 🔹 Sequence-type (rekkefølgespørsmål)
+    if ("itemsKey" in q) {
+      return (
+        <div style={{ display: "grid", gap: 8 }}>
+          {q.itemsKey.map((key: string, i: number) => (
+            <div
+              key={i}
+              className="card"
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+              }}
+            >
+              {t(dict, key)}
+            </div>
+          ))}
+          <p className="muted text-sm">
+            (Sequence questions are not interactive yet)
+          </p>
+        </div>
+      );
+    }
+
+    // 🔹 Hvis ukjent type
+    return <p>Unsupported question type</p>;
   }
 
   return (
@@ -55,28 +116,8 @@ export default function TestPage() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gap: 8 }}>
-            {item.optionsKey?.map((key: string, i: number) => (
-              <label
-                key={i}
-                className="card"
-                style={{
-                  padding: 12,
-                  display: "flex",
-                  gap: 8,
-                  alignItems: "center",
-                }}
-              >
-                <input
-                  type="radio"
-                  name={`q-${item.id}`}
-                  checked={answers[item.id] === key}
-                  onChange={() => setChoice(key)}
-                />
-                <span>{t(dict, key)}</span>
-              </label>
-            ))}
-          </div>
+          {/* Dynamisk renderer basert på question type */}
+          {renderQuestion(item)}
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button
