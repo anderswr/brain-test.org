@@ -1,0 +1,107 @@
+{
+  "site": {
+    "title": "Free Cognitive Ability Test (ICAR-based)",
+    "tagline": "A research-informed IQ estimate based on open cognitive measures."
+  },
+
+  "cta": {
+    "start": "Start the test",
+    "continue": "Continue",
+    "submit": "Finish and see result",
+    "restart": "Retake test"
+  },
+
+  "disclaimer": "This test is for educational and research purposes only. Scores are approximate and not a clinical or diagnostic assessment.",
+
+  "ui": {
+    "common": {
+      "loading": "Loading…",
+      "read": "Read",
+      "sending": "Sending…",
+      "try_again": "Try again",
+      "back": "Back"
+    },
+
+    "nav": {
+      "home": "Home",
+      "result": "Result",
+      "compare": "Compare",
+      "articles": "Articles",
+      "about": "About"
+    },
+
+    "home": {
+      "title": "Estimate your IQ — anonymously and for free",
+      "intro": "This short cognitive test uses public-domain items from ICAR (International Cognitive Ability Resource).",
+      "tests_count_title": "Completed IQ tests",
+      "tests_count_caption": "People have used this free, anonymous tool."
+    },
+
+    "compare": {
+      "title": "Compare results",
+      "explainer": "Enter two IDs to compare results over time.",
+      "id_a": "ID A",
+      "id_b": "ID B",
+      "notfound": "Could not find one or both IDs.",
+      "error": "Something went wrong. Try again later."
+    },
+
+    "result": {
+      "title": "Your IQ Result",
+      "id_placeholder": "Your ID",
+      "lookup_hint": "Paste your ID to open your detailed report.",
+      "copy_id": "Copy ID",
+      "disclaimer_iq": "This IQ estimate is calculated using normalized z-scores across five cognitive domains: reasoning, math, verbal, spatial, and memory. The scoring model is based on Gaussian normalization of ICAR-like items, scaled to μ = 100 and σ = 15. Scores are indicative, not diagnostic.",
+      "iq_distribution": "IQ Distribution",
+      "iq_explainer_short": "Your IQ estimate (mean = 100, SD = 15) is plotted on a normal curve. Most people fall between 85 – 115. Shaded regions mark standard ability bands used in research and education.",
+      "how_to_improve": "How to improve this:",
+      "explainer_long": "Scores are derived from your accuracy across cognitive domains. Each correct answer contributes to a weighted z-score, normalized to the reference mean (μ = 100, σ = 15). The 95 % confidence interval (CI) reflects expected statistical variation given the number of items answered.",
+      "explanation_method": "The IQ computation method follows psychometric conventions similar to ICAR (Condon & Revelle, 2014) and WAIS standardization norms (Wechsler, 2008). Z-scores per domain are averaged and scaled to match a standard normal distribution. Percentiles are then derived from the cumulative normal distribution Φ(z). This approach is transparent and reproducible.",
+      "references": "References: Condon, D. M. & Revelle, W. (2014). The International Cognitive Ability Resource: Development and initial validation. Intelligence, 43, 52-64. | Wechsler, D. (2008). WAIS-IV Manual. Pearson Assessment.",
+      "iq_curve_caption": "The curve below shows how your estimated IQ compares to the general population."
+    }
+  },
+
+  "category": {
+    "reasoning": {
+      "name": "Abstract Reasoning",
+      "desc": "Ability to detect patterns, logic, and relationships in visual or conceptual information."
+    },
+    "math": {
+      "name": "Quantitative Reasoning",
+      "desc": "Skill in numerical problem-solving and logical operations based on arithmetic or algebraic concepts."
+    },
+    "verbal": {
+      "name": "Verbal Reasoning",
+      "desc": "Understanding and manipulation of written language, analogies, and verbal logic."
+    },
+    "spatial": {
+      "name": "Spatial Visualization",
+      "desc": "Ability to mentally rotate, transform, or manipulate visual patterns and geometric forms."
+    },
+    "memory": {
+      "name": "Memory & Attention",
+      "desc": "Short-term recall, sequence recognition, and focused attention under time constraints."
+    }
+  },
+
+  "report": {
+    "overview": "Your result summarizes performance across five major cognitive domains.",
+    "interpretation": "Scores are standardized to have a mean of 100 and a standard deviation of 15. Values between 85–115 are within the typical range. Higher scores indicate stronger reasoning and cognitive flexibility.",
+    "categories_explainer": "The per-category results help you understand your cognitive strengths and development areas.",
+    "band_labels": {
+      "very_low": "Very Low",
+      "below_average": "Below Average",
+      "average": "Average",
+      "above_average": "Above Average",
+      "gifted": "Gifted"
+    }
+  },
+
+  "about": {
+    "title": "About this test",
+    "method": "This test is inspired by the International Cognitive Ability Resource (ICAR) and public-domain cognitive items. It provides an open, transparent way to estimate general reasoning ability (g). The dataset and scoring methods are freely available for research use.",
+    "audience": "Suitable for ages 14 and up, for educational, personal, or HR screening use. No identifying data is stored — only an anonymous ID for comparison over time.",
+    "limitations": "This test is not a substitute for professional psychometric assessment. Environmental factors, mood, and language proficiency can affect results."
+  }
+}
