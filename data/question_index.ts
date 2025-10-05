@@ -1,21 +1,37 @@
 // /data/question_index.ts
 import { Question } from "@/lib/types";
 
-// Importer kategorier
+// Import categories
 import { REASONING_QUESTIONS } from "@/data/reasoning";
 import { MATH_QUESTIONS } from "@/data/math";
 import { VERBAL_QUESTIONS } from "@/data/verbal";
 import { SPATIAL_QUESTIONS } from "@/data/spatial";
 import { MEMORY_QUESTIONS } from "@/data/memory";
 
-// Importer fasit (for scoring/logging/debug)
+// Import answer keys
 import { REASONING_ANSWER_KEY } from "@/data/reasoning_answer_key";
 import { MATH_ANSWER_KEY } from "@/data/math_answer_key";
 import { VERBAL_ANSWER_KEY } from "@/data/verbal_answer_key";
 import { SPATIAL_ANSWER_KEY } from "@/data/spatial_answer_key";
 import { MEMORY_ANSWER_KEY } from "@/data/memory_answer_key";
 
-// Kategorivis mapping
+// --- Helper: shuffle array (Fisher–Yates)
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// --- Helper: select N random unique items
+function sample<T>(arr: T[], n: number): T[] {
+  if (n >= arr.length) return shuffle(arr);
+  return shuffle(arr).slice(0, n);
+}
+
+// --- Category registry
 export const CATEGORY_INDEX = {
   reasoning: REASONING_QUESTIONS,
   math: MATH_QUESTIONS,
@@ -24,16 +40,25 @@ export const CATEGORY_INDEX = {
   memory: MEMORY_QUESTIONS
 };
 
-// Samlet spørsmålbank (alle kategorier)
-export const QUESTION_BANK: Question[] = [
-  ...REASONING_QUESTIONS,
-  ...MATH_QUESTIONS,
-  ...VERBAL_QUESTIONS,
-  ...SPATIAL_QUESTIONS,
-  ...MEMORY_QUESTIONS
-];
+// --- Sample config: number of questions per category
+const CATEGORY_SAMPLE = {
+  reasoning: 8,
+  math: 8,
+  verbal: 8,
+  spatial: 8,
+  memory: 8
+};
 
-// Samlet fasit for alle kategorier
+// --- Combined question pool (balanced & shuffled)
+export const QUESTION_BANK: Question[] = shuffle([
+  ...sample(REASONING_QUESTIONS, CATEGORY_SAMPLE.reasoning),
+  ...sample(MATH_QUESTIONS, CATEGORY_SAMPLE.math),
+  ...sample(VERBAL_QUESTIONS, CATEGORY_SAMPLE.verbal),
+  ...sample(SPATIAL_QUESTIONS, CATEGORY_SAMPLE.spatial),
+  ...sample(MEMORY_QUESTIONS, CATEGORY_SAMPLE.memory)
+]);
+
+// --- Combined answer key
 export const ANSWER_KEY = {
   ...REASONING_ANSWER_KEY,
   ...MATH_ANSWER_KEY,
@@ -42,8 +67,11 @@ export const ANSWER_KEY = {
   ...MEMORY_ANSWER_KEY
 };
 
-// Praktisk helper: liste med alle kategorinavn
+// --- Meta
 export const ALL_CATEGORY_IDS = Object.keys(CATEGORY_INDEX);
+export const BANK_VERSION = "2.1.0" as const;
 
-// Versjon (oppdater ved endring)
-export const BANK_VERSION = "2.0.0" as const;
+console.log(
+  `[IQ-Test] Loaded ${QUESTION_BANK.length} shuffled questions:`,
+  Object.fromEntries(Object.entries(CATEGORY_SAMPLE))
+);
