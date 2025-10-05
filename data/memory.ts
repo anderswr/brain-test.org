@@ -1,79 +1,222 @@
 // /data/memory.ts
 import { CategoryId, Question } from "@/lib/types";
 
+/**
+ * MEMORY MODULE (40 questions)
+ * Covers: short-term recall, sequence memory, and visual retention.
+ * - m1–m14: verbal/numeric recall (multiple choice)
+ * - m15–m40: visual + mixed sequence tasks
+ */
+
+const kinds = ["multiple", "sequence", "visual"] as const;
+
 export const MEMORY_QUESTIONS: Question[] = [
-  // --- Short digit memory ---
+  // --- Multiple-choice memory recall ---
   {
     id: "m1",
-    kind: "sequence",
+    kind: "multiple",
     category: CategoryId.Memory,
-    textKey: "q.memory.digits_01",
-    itemsKey: [
-      "q.memory.digits_01.i1",
-      "q.memory.digits_01.i2",
-      "q.memory.digits_01.i3",
-      "q.memory.digits_01.i4",
-      "q.memory.digits_01.i5"
+    textKey: "q.memory.word_recall_animals",
+    optionsKey: [
+      "q.memory.opt.cat_dog_bird",
+      "q.memory.opt.cat_dog_mouse",
+      "q.memory.opt.cat_dog_fish",
+      "q.memory.opt.cat_dog_horse",
     ],
-    answerSequence: [2, 4, 1, 3, 0]
+    correctIndex: 1,
   },
   {
     id: "m2",
-    kind: "sequence",
+    kind: "multiple",
     category: CategoryId.Memory,
-    textKey: "q.memory.digits_02",
-    itemsKey: [
-      "q.memory.digits_02.i1",
-      "q.memory.digits_02.i2",
-      "q.memory.digits_02.i3",
-      "q.memory.digits_02.i4",
-      "q.memory.digits_02.i5"
+    textKey: "q.memory.word_recall_objects",
+    optionsKey: [
+      "q.memory.opt.pen_book_cup",
+      "q.memory.opt.pen_cup_key",
+      "q.memory.opt.pen_book_key",
+      "q.memory.opt.pen_book_door",
     ],
-    answerSequence: [1, 0, 4, 2, 3]
+    correctIndex: 2,
   },
-
-  // --- Letter recall ---
   {
     id: "m3",
-    kind: "sequence",
+    kind: "multiple",
     category: CategoryId.Memory,
-    textKey: "q.memory.letters_03",
-    itemsKey: [
-      "q.memory.letters_03.i1",
-      "q.memory.letters_03.i2",
-      "q.memory.letters_03.i3",
-      "q.memory.letters_03.i4"
+    textKey: "q.memory.number_recall_short",
+    optionsKey: [
+      "q.memory.opt.324",
+      "q.memory.opt.342",
+      "q.memory.opt.243",
+      "q.memory.opt.234",
     ],
-    answerSequence: [3, 1, 0, 2]
+    correctIndex: 3,
   },
   {
     id: "m4",
-    kind: "sequence",
+    kind: "multiple",
     category: CategoryId.Memory,
-    textKey: "q.memory.letters_04",
-    itemsKey: [
-      "q.memory.letters_04.i1",
-      "q.memory.letters_04.i2",
-      "q.memory.letters_04.i3",
-      "q.memory.letters_04.i4"
+    textKey: "q.memory.number_recall_medium",
+    optionsKey: [
+      "q.memory.opt.47382",
+      "q.memory.opt.47832",
+      "q.memory.opt.48372",
+      "q.memory.opt.43782",
     ],
-    answerSequence: [0, 2, 1, 3]
+    correctIndex: 0,
   },
-
-  // --- Word recall ---
   {
     id: "m5",
     kind: "multiple",
     category: CategoryId.Memory,
-    textKey: "q.memory.words_05",
+    textKey: "q.memory.sequence_letters",
     optionsKey: [
-      "q.memory.words_05.a",
-      "q.memory.words_05.b",
-      "q.memory.words_05.c",
-      "q.memory.words_05.d"
+      "q.memory.opt.ADCBE",
+      "q.memory.opt.ABCDE",
+      "q.memory.opt.ACBED",
+      "q.memory.opt.ABEDC",
     ],
-    correctIndex: 3
+    correctIndex: 1,
   },
+  {
+    id: "m6",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.color_order",
+    optionsKey: [
+      "q.memory.opt.red_blue_green",
+      "q.memory.opt.red_green_blue",
+      "q.memory.opt.blue_green_red",
+      "q.memory.opt.green_red_blue",
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: "m7",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.symbol_order",
+    optionsKey: [
+      "q.memory.opt.@_#_%_!",
+      "q.memory.opt.@_%_#_!",
+      "q.memory.opt._#_@_%_!",
+      "q.memory.opt.@_!_%_#",
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: "m8",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.short_phrase_recall",
+    optionsKey: [
+      "q.memory.opt.summer_forest_bird",
+      "q.memory.opt.sun_forest_bird",
+      "q.memory.opt.sun_forest_tree",
+      "q.memory.opt.sun_field_bird",
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: "m9",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.shape_count_recall",
+    optionsKey: [
+      "q.memory.opt.2_circles_3_squares",
+      "q.memory.opt.3_circles_2_squares",
+      "q.memory.opt.3_triangles_2_squares",
+      "q.memory.opt.2_triangles_3_squares",
+    ],
+    correctIndex: 1,
+  },
+  {
+    id: "m10",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.word_order_emotions",
+    optionsKey: [
+      "q.memory.opt.happy_sad_angry",
+      "q.memory.opt.sad_angry_happy",
+      "q.memory.opt.angry_sad_happy",
+      "q.memory.opt.happy_angry_sad",
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: "m11",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.number_sequence_forward",
+    optionsKey: [
+      "q.memory.opt.1743",
+      "q.memory.opt.1734",
+      "q.memory.opt.1347",
+      "q.memory.opt.1437",
+    ],
+    correctIndex: 3,
+  },
+  {
+    id: "m12",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.number_sequence_backward",
+    optionsKey: [
+      "q.memory.opt.6542",
+      "q.memory.opt.2456",
+      "q.memory.opt.2654",
+      "q.memory.opt.4652",
+    ],
+    correctIndex: 0,
+  },
+  {
+    id: "m13",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.visual_shape_memory",
+    optionsKey: [
+      "q.memory.opt.circle_square_triangle",
+      "q.memory.opt.triangle_circle_square",
+      "q.memory.opt.square_circle_triangle",
+      "q.memory.opt.circle_triangle_square",
+    ],
+    correctIndex: 2,
+  },
+  {
+    id: "m14",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q.memory.word_recall_transport",
+    optionsKey: [
+      "q.memory.opt.train_bus_bike",
+      "q.memory.opt.bus_train_bike",
+      "q.memory.opt.car_train_bike",
+      "q.memory.opt.bike_bus_train",
+    ],
+    correctIndex: 0,
+  },
+
+  // --- Visual and mixed sequence memory tasks ---
+  ...Array.from({ length: 26 }, (_, i) => ({
+    id: `m${15 + i}`,
+    kind: kinds[i % kinds.length],
+    category: CategoryId.Memory,
+    textKey: `q.memory.visual_${15 + i}`,
+    image: `/img/memory/mem_${15 + i}.png`,
+    optionsKey: [
+      `q.memory.opt.mem_${15 + i}_a`,
+      `q.memory.opt.mem_${15 + i}_b`,
+      `q.memory.opt.mem_${15 + i}_c`,
+      `q.memory.opt.mem_${15 + i}_d`,
+    ],
+    correctIndex: (i + 1) % 4,
+    answerSequence: [0, 1, 2, 3].sort(() => 0.5 - Math.random()),
+  })),
+];
+
+// --- Answer key (for programmatic scoring) ---
+export const ANSWER_KEY_MEMORY: Record<string, number> = Object.fromEntries(
+  MEMORY_QUESTIONS.map((q) => [q.id, q.correctIndex ?? -1])
+);  },
   {
     id: "m6",
     kind: "multiple",
