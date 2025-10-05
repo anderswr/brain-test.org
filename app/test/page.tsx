@@ -1,19 +1,18 @@
-
 "use client";
 import * as React from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
-import { ICAR16 } from "@/data/icar16";
+import { QUESTIONS } from "@/data/questions";  // 👈 bytt fra ICAR16 til nye spørsmål
 
 export default function TestPage() {
   const { dict, lang } = useI18n();
   const [idx, setIdx] = React.useState(0);
-  const [answers, setAnswers] = React.useState<Record<string,string>>({});
+  const [answers, setAnswers] = React.useState<Record<string, string>>({});
   const [submitting, setSubmitting] = React.useState(false);
-  const [error, setError] = React.useState<string|null>(null);
-  const item = ICAR16[idx];
+  const [error, setError] = React.useState<string | null>(null);
+  const item = QUESTIONS[idx]; // 👈 bytt her også
 
   function setChoice(choiceId: string) {
     setAnswers((a) => ({ ...a, [item.id]: choiceId }));
@@ -40,39 +39,41 @@ export default function TestPage() {
   return (
     <div>
       <SiteHeader />
-      <main style={{marginTop:16}}>
+      <main style={{ marginTop: 16 }}>
         <div className="card">
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center", marginBottom:12}}>
-            <div style={{fontWeight:600}}>{t(dict,item.promptKey)}</div>
-            <div style={{opacity:.6, fontSize:12}}>{idx+1} / {ICAR16.length}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <div style={{ fontWeight: 600 }}>{t(dict, item.textKey)}</div>
+            <div style={{ opacity: 0.6, fontSize: 12 }}>{idx + 1} / {QUESTIONS.length}</div>
           </div>
 
-          <div style={{display:"grid", gap:8}}>
-            {item.choices.map((c) => (
-              <label key={c.id} className="card" style={{padding:12, display:"flex", gap:8, alignItems:"center"}}>
-                <input type="radio" name={`q-${item.id}`} checked={answers[item.id]===c.id} onChange={()=>setChoice(c.id)} />
-                <span>{t(dict,c.textKey)}</span>
+          <div style={{ display: "grid", gap: 8 }}>
+            {item.optionsKey?.map((key: string, i: number) => (
+              <label key={i} className="card" style={{ padding: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                <input type="radio" name={`q-${item.id}`} checked={answers[item.id] === key} onChange={() => setChoice(key)} />
+                <span>{t(dict, key)}</span>
               </label>
             ))}
           </div>
 
-          <div style={{display:"flex", gap:8, marginTop:12}}>
-            <button className="btn" onClick={()=>setIdx((i)=>Math.max(0,i-1))} disabled={idx===0 || submitting}>← {t(dict,"cta.continue","Continue")}</button>
-            {idx < ICAR16.length-1 ? (
-              <button className="btn" onClick={()=>setIdx((i)=>Math.min(ICAR16.length-1,i+1))} disabled={!answers[item.id] || submitting}>
-                {t(dict,"cta.continue","Continue")} →
+          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+            <button className="btn" onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0 || submitting}>
+              ← {t(dict, "cta.continue", "Back")}
+            </button>
+            {idx < QUESTIONS.length - 1 ? (
+              <button className="btn" onClick={() => setIdx((i) => Math.min(QUESTIONS.length - 1, i + 1))} disabled={!answers[item.id] || submitting}>
+                {t(dict, "cta.continue", "Continue")} →
               </button>
             ) : (
-              <button className="btn" onClick={submit} disabled={Object.keys(answers).length!==ICAR16.length || submitting}>
-                {t(dict,"cta.submit","Finish")} ✓
+              <button className="btn" onClick={submit} disabled={Object.keys(answers).length !== QUESTIONS.length || submitting}>
+                {t(dict, "cta.submit", "Finish and see result")} ✓
               </button>
             )}
           </div>
 
-          {error && <p style={{color:"#f87171", marginTop:8, fontSize:14}}>{error}</p>}
+          {error && <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>{error}</p>}
         </div>
       </main>
       <SiteFooter />
     </div>
   );
-}
+}}
