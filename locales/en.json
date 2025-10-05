@@ -104,7 +104,7 @@
     "audience": "Suitable for ages 14 and up, for educational, personal, or HR screening use. No identifying data is stored — only an anonymous ID for comparison over time.",
     "limitations": "This test is not a substitute for professional psychometric assessment. Environmental factors, mood, and language proficiency can affect results."
   }
-},
+}
 "iq_explainer": {
   "title": "How your IQ estimate is calculated",
   "intro": "This free assessment uses open-source, research-based methods to approximate general cognitive ability (g). It is designed for educational, self-assessment, and research purposes — not as a clinical or hiring diagnostic. However, it follows psychometric principles comparable to those used in standardized instruments.",
