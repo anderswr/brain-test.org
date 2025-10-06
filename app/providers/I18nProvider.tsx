@@ -1,9 +1,10 @@
+// /app/providers/I18nProvider.tsx
 "use client";
 import * as React from "react";
 
 export type Dict = Record<string, any>;
 
-/** Gjør nested JSON-flater til én nøkkel: {a:{b:"x"}} -> {"a.b":"x"} */
+/** Flatten nested JSON objects into dot keys */
 function flatten(obj: Record<string, any>, prefix = ""): Record<string, any> {
   return Object.keys(obj).reduce((acc, key) => {
     const value = obj[key];
@@ -17,13 +18,11 @@ function flatten(obj: Record<string, any>, prefix = ""): Record<string, any> {
   }, {} as Record<string, any>);
 }
 
-/** Laster og slår sammen alle JSON-filer i locales/[lang]/ */
+/** Load and merge all JSON files in locales/[lang]/ */
 async function loadDict(lang: string): Promise<Dict> {
-  const files = [
-    "en", "reasoning", "math", "verbal", "spatial", "memory"
-  ];
-
+  const files = ["en", "reasoning", "math", "verbal", "spatial", "memory"];
   const merged: Dict = {};
+
   for (const file of files) {
     try {
       const mod = await import(`@/locales/${lang}/${file}.json`);
@@ -33,15 +32,21 @@ async function loadDict(lang: string): Promise<Dict> {
     }
   }
 
-  // fallback
   if (Object.keys(merged).length === 0 && lang !== "en") {
     return loadDict("en");
   }
   return merged;
 }
 
-/** Hook for i18n */
-export function useI18n() {
+/** Context setup */
+const I18nContext = React.createContext<{
+  lang: string;
+  setLang: (lang: string) => void;
+  dict: Dict;
+}>({ lang: "en", setLang: () => {}, dict: {} });
+
+/** Provider component */
+export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = React.useState("en");
   const [dict, setDict] = React.useState<Dict>({});
 
@@ -49,5 +54,14 @@ export function useI18n() {
     loadDict(lang).then(setDict);
   }, [lang]);
 
-  return { lang, setLang, dict };
+  return (
+    <I18nContext.Provider value={{ lang, setLang, dict }}>
+      {children}
+    </I18nContext.Provider>
+  );
+}
+
+/** Hook for easy access */
+export function useI18n() {
+  return React.useContext(I18nContext);
 }
