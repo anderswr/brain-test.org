@@ -1,124 +1,124 @@
 {
-    "site": {
-        "title": "Free Cognitive Ability Test (ICAR-based)",
-        "tagline": "A research-informed IQ estimate based on open cognitive measures."
+  "site": {
+    "title": "Free Cognitive Ability Test",
+    "tagline": "A short, research-inspired IQ estimation across five core cognitive domains."
+  },
+  "cta": {
+    "start": "Start the test",
+    "continue": "Continue",
+    "submit": "Finish and see result",
+    "restart": "Retake test"
+  },
+  "disclaimer": "This test is for educational and research purposes only. Scores are approximate and not a clinical or diagnostic assessment.",
+  "ui": {
+    "common": {
+      "loading": "Loading…",
+      "read": "Read",
+      "sending": "Sending…",
+      "try_again": "Try again",
+      "back": "Back"
     },
-    "cta": {
-        "start": "Start the test",
-        "continue": "Continue",
-        "submit": "Finish and see result",
-        "restart": "Retake test"
+    "nav": {
+      "home": "Home",
+      "result": "Result",
+      "compare": "Compare",
+      "articles": "Articles",
+      "about": "About"
     },
-    "disclaimer": "This test is for educational and research purposes only. Scores are approximate and not a clinical or diagnostic assessment.",
-    "ui": {
-        "common": {
-            "loading": "Loading…",
-            "read": "Read",
-            "sending": "Sending…",
-            "try_again": "Try again",
-            "back": "Back"
-        },
-        "nav": {
-            "home": "Home",
-            "result": "Result",
-            "compare": "Compare",
-            "articles": "Articles",
-            "about": "About"
-        },
-        "home": {
-            "title": "Estimate your IQ — anonymously and for free",
-            "intro": "This short cognitive test uses public-domain items from ICAR (International Cognitive Ability Resource).",
-            "tests_count_title": "Completed IQ tests",
-            "tests_count_caption": "People have used this free, anonymous tool."
-        },
-        "compare": {
-            "title": "Compare results",
-            "explainer": "Enter two IDs to compare results over time.",
-            "id_a": "ID A",
-            "id_b": "ID B",
-            "notfound": "Could not find one or both IDs.",
-            "error": "Something went wrong. Try again later."
-        },
-        "result": {
-            "title": "Your IQ Result",
-            "id_placeholder": "Your ID",
-            "lookup_hint": "Paste your ID to open your detailed report.",
-            "copy_id": "Copy ID",
-            "disclaimer_iq": "This IQ estimate is calculated using normalized z-scores across five cognitive domains: reasoning, math, verbal, spatial, and memory. The scoring model is based on Gaussian normalization of ICAR-like items, scaled to μ = 100 and σ = 15. Scores are indicative, not diagnostic.",
-            "iq_distribution": "IQ Distribution",
-            "iq_explainer_short": "Your IQ estimate (mean = 100, SD = 15) is plotted on a normal curve. Most people fall between 85 – 115. Shaded regions mark standard ability bands used in research and education.",
-            "how_to_improve": "How to improve this:",
-            "explainer_long": "Scores are derived from your accuracy across cognitive domains. Each correct answer contributes to a weighted z-score, normalized to the reference mean (μ = 100, σ = 15). The 95 % confidence interval (CI) reflects expected statistical variation given the number of items answered.",
-            "explanation_method": "The IQ computation method follows psychometric conventions similar to ICAR (Condon & Revelle, 2014) and WAIS standardization norms (Wechsler, 2008). Z-scores per domain are averaged and scaled to match a standard normal distribution. Percentiles are then derived from the cumulative normal distribution Φ(z). This approach is transparent and reproducible.",
-            "references": "References: Condon, D. M. & Revelle, W. (2014). The International Cognitive Ability Resource: Development and initial validation. Intelligence, 43, 52-64. | Wechsler, D. (2008). WAIS-IV Manual. Pearson Assessment.",
-            "iq_curve_caption": "The curve below shows how your estimated IQ compares to the general population."
-        }
+    "home": {
+      "title": "Estimate your IQ — free, fast, and anonymous",
+      "intro": "This short cognitive assessment measures reasoning, numerical, verbal, spatial, and memory skills. It follows open psychometric principles inspired by modern intelligence research.",
+      "tests_count_title": "Completed tests",
+      "tests_count_caption": "People have used this free and anonymous assessment."
     },
-    "category": {
-        "reasoning": {
-            "name": "Abstract Reasoning",
-            "desc": "Ability to detect patterns, logic, and relationships in visual or conceptual information."
-        },
-        "math": {
-            "name": "Quantitative Reasoning",
-            "desc": "Skill in numerical problem-solving and logical operations based on arithmetic or algebraic concepts."
-        },
-        "verbal": {
-            "name": "Verbal Reasoning",
-            "desc": "Understanding and manipulation of written language, analogies, and verbal logic."
-        },
-        "spatial": {
-            "name": "Spatial Visualization",
-            "desc": "Ability to mentally rotate, transform, or manipulate visual patterns and geometric forms."
-        },
-        "memory": {
-            "name": "Memory & Attention",
-            "desc": "Short-term recall, sequence recognition, and focused attention under time constraints."
-        }
+    "compare": {
+      "title": "Compare results",
+      "explainer": "Enter two IDs to compare results over time.",
+      "id_a": "ID A",
+      "id_b": "ID B",
+      "notfound": "Could not find one or both IDs.",
+      "error": "Something went wrong. Try again later."
     },
-    "report": {
-        "overview": "Your result summarizes performance across five major cognitive domains.",
-        "interpretation": "Scores are standardized to have a mean of 100 and a standard deviation of 15. Values between 85–115 are within the typical range. Higher scores indicate stronger reasoning and cognitive flexibility.",
-        "categories_explainer": "The per-category results help you understand your cognitive strengths and development areas.",
-        "band_labels": {
-            "very_low": "Very Low",
-            "below_average": "Below Average",
-            "average": "Average",
-            "above_average": "Above Average",
-            "gifted": "Gifted"
-        }
-    },
-    "about": {
-        "title": "About this test",
-        "method": "This test is inspired by the International Cognitive Ability Resource (ICAR) and public-domain cognitive items. It provides an open, transparent way to estimate general reasoning ability (g). The dataset and scoring methods are freely available for research use.",
-        "audience": "Suitable for ages 14 and up, for educational, personal, or HR screening use. No identifying data is stored — only an anonymous ID for comparison over time.",
-        "limitations": "This test is not a substitute for professional psychometric assessment. Environmental factors, mood, and language proficiency can affect results."
-    },
-    "iq_explainer": {
-        "title": "How your IQ estimate is calculated",
-        "intro": "This free assessment uses open-source, research-based methods to approximate general cognitive ability (g). It is designed for educational, self-assessment, and research purposes — not as a clinical or hiring diagnostic. However, it follows psychometric principles comparable to those used in standardized instruments.",
-        "method": {
-            "heading": "Calculation method",
-            "p1": "Each question contributes a raw accuracy score (correct or partial credit). These scores are weighted by category reliability and combined across five core domains: Reasoning, Math, Verbal, Spatial, and Memory.",
-            "p2": "The total is converted into a standardized score (Z-score) using the mean (μ) and standard deviation (σ) derived from pilot norm data. The Z-score is then mapped to an IQ scale where Mean = 100 and SD = 15, as defined in modern psychometric standards.",
-            "p3": "A 95% confidence interval (CI) is shown to reflect measurement precision — typically ±6 IQ points based on test–retest reliability and the number of subtests."
-        },
-        "theory": {
-            "heading": "Psychometric theory and references",
-            "p1": "The scoring is aligned with classical test theory (CTT) and item response theory (IRT) concepts used in the development of validated IQ instruments. Items were inspired by public-domain tasks from the International Cognitive Ability Resource (ICAR; Condon & Revelle, 2014) and related reasoning paradigms in the Cattell–Horn–Carroll model.",
-            "p2": "The interpretation follows normal-distribution conventions used in major intelligence scales such as the Wechsler Adult Intelligence Scale (WAIS-IV), Stanford–Binet, and Raven’s Advanced Progressive Matrices.",
-            "p3": "Sources: Condon, D. M., & Revelle, W. (2014). The International Cognitive Ability Resource: Development and initial validation of an open-source, public-domain measure. *Intelligence, 43*, 52–64. doi:10.1016/j.intell.2014.01.004. — Wechsler, D. (2008). *WAIS–IV Technical and Interpretive Manual.*"
-        },
-        "audience": {
-            "heading": "For educators, students, and employers",
-            "p1": "The structure is intentionally balanced: abstract reasoning, applied numeracy, language comprehension, visual–spatial reasoning, and working memory. This allows use in classrooms (ages 14+), career training, or pre-employment aptitude screening.",
-            "p2": "Teachers can discuss strengths and learning profiles using the category results. Employers and trainees may interpret it as an indicator of general problem-solving efficiency rather than fixed intelligence."
-        },
-        "limitations": {
-            "heading": "Interpretation and limitations",
-            "p1": "Scores are approximate and depend on test conditions, motivation, and familiarity with similar puzzles. Repeated use may slightly raise performance due to learning effects.",
-            "p2": "This assessment is anonymous, educational, and non-diagnostic. It does not replace standardized testing administered under controlled conditions by qualified psychologists."
-        },
-        "summary": "In short: the test uses research-based, standardized methods (mean 100, SD 15) to approximate general cognitive ability. It is suitable for education, research, and self-understanding — presented with transparency and respect for scientific validity."
+    "result": {
+      "title": "Your IQ Estimate",
+      "id_placeholder": "Your ID",
+      "lookup_hint": "Paste your ID to open your detailed report.",
+      "copy_id": "Copy ID",
+      "disclaimer_iq": "Your result reflects performance across five cognitive domains: reasoning, math, verbal, spatial, and memory. It is scored using a normalized model with mean = 100 and standard deviation = 15. Scores are indicative, not diagnostic.",
+      "iq_distribution": "IQ Distribution",
+      "iq_explainer_short": "Your IQ estimate (mean = 100, SD = 15) is plotted on a normal curve. Most people fall between 85 – 115. Shaded regions indicate standard ability ranges used in research and education.",
+      "how_to_improve": "How to interpret this:",
+      "explainer_long": "Scores are derived from your accuracy across multiple cognitive domains. Each correct answer contributes to a weighted z-score that is scaled to the population mean (μ = 100, σ = 15). The 95% confidence interval (CI) reflects normal statistical variation based on test length.",
+      "explanation_method": "The scoring model follows widely accepted psychometric conventions similar to those used in standardized ability assessments (e.g., WAIS and Raven matrices). Z-scores across categories are averaged and rescaled to fit the IQ metric.",
+      "references": "References: Condon & Revelle (2014), Wechsler (2008), and other open psychometric frameworks.",
+      "iq_curve_caption": "The curve below shows how your estimated IQ compares to the general population."
     }
+  },
+  "category": {
+    "reasoning": {
+      "name": "Abstract Reasoning",
+      "desc": "Ability to recognize logical patterns, structures, and relationships between concepts or symbols."
+    },
+    "math": {
+      "name": "Quantitative Reasoning",
+      "desc": "Skill in analyzing numerical information and solving problems using arithmetic or logic."
+    },
+    "verbal": {
+      "name": "Verbal Reasoning",
+      "desc": "Understanding, comparing, and reasoning with written language and verbal analogies."
+    },
+    "spatial": {
+      "name": "Spatial Visualization",
+      "desc": "Ability to mentally rotate, manipulate, and visualize shapes and spatial relationships."
+    },
+    "memory": {
+      "name": "Memory & Attention",
+      "desc": "Short-term recall, sequence recognition, and concentration on quickly changing information."
+    }
+  },
+  "report": {
+    "overview": "Your result reflects performance across five key areas of cognition.",
+    "interpretation": "Scores are standardized to a mean of 100 and a standard deviation of 15. Values between 85–115 are typical. Higher scores indicate stronger reasoning and problem-solving flexibility.",
+    "categories_explainer": "The per-category results highlight your cognitive strengths and development areas.",
+    "band_labels": {
+      "very_low": "Very Low",
+      "below_average": "Below Average",
+      "average": "Average",
+      "above_average": "Above Average",
+      "gifted": "Gifted"
+    }
+  },
+  "about": {
+    "title": "About this test",
+    "method": "This test uses a balanced mix of open-format cognitive tasks modeled after well-established reasoning and aptitude assessments. It estimates general reasoning ability (g) in a transparent and research-oriented way.",
+    "audience": "Suitable for ages 14 and up. Designed for education, personal insight, or preliminary aptitude screening. No personal data is collected — only an anonymous ID is stored for comparison over time.",
+    "limitations": "Results are approximate and can vary with factors such as focus, language, and environment. This tool is educational and not a substitute for a formal psychological evaluation."
+  },
+  "iq_explainer": {
+    "title": "How your IQ estimate is calculated",
+    "intro": "This assessment uses a research-based method to estimate general cognitive ability (g). It combines multiple domains to produce a standardized IQ-like score for educational and self-reflection purposes.",
+    "method": {
+      "heading": "Calculation method",
+      "p1": "Each correct answer contributes to your raw accuracy. Scores are weighted across five domains: Reasoning, Math, Verbal, Spatial, and Memory.",
+      "p2": "Your total is converted into a standardized score using a z-score transformation, then scaled to an IQ-equivalent metric (mean = 100, SD = 15).",
+      "p3": "A 95% confidence interval (CI) indicates expected variation based on the number of questions and category balance."
+    },
+    "theory": {
+      "heading": "Psychometric background",
+      "p1": "The scoring model follows classical test theory (CTT) principles and psychometric scaling used in validated aptitude and intelligence measures.",
+      "p2": "It reflects conventions used in instruments such as the Wechsler Adult Intelligence Scale (WAIS-IV) and Raven’s Progressive Matrices, adjusted for open-source testing contexts.",
+      "p3": "References: Condon & Revelle (2014); Wechsler (2008); Carroll (1993)."
+    },
+    "audience": {
+      "heading": "Intended use",
+      "p1": "This test provides a general, research-style IQ estimate that can be used for self-assessment, education, or personal development.",
+      "p2": "It does not define intelligence but provides a snapshot of cognitive processing and reasoning efficiency."
+    },
+    "limitations": {
+      "heading": "Interpretation and limitations",
+      "p1": "Results depend on focus, motivation, and familiarity with similar problem types. Re-taking the test may slightly improve scores due to practice effects.",
+      "p2": "This test is anonymous, educational, and non-diagnostic. It should not be used for hiring or clinical decisions."
+    },
+    "summary": "In short: this test provides a transparent, research-inspired estimate of general cognitive ability — standardized to the IQ scale (mean 100, SD 15) for intuitive interpretation."
+  }
 }
