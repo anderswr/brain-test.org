@@ -1,21 +1,12 @@
 // /data/question_index.ts
 import { Question } from "@/lib/types";
-
-// Import categories
 import { REASONING_QUESTIONS } from "@/data/reasoning";
 import { MATH_QUESTIONS } from "@/data/math";
 import { VERBAL_QUESTIONS } from "@/data/verbal";
 import { SPATIAL_QUESTIONS } from "@/data/spatial";
 import { MEMORY_QUESTIONS } from "@/data/memory";
 
-// Import answer keys
-import { REASONING_ANSWER_KEY } from "@/data/reasoning_answer_key";
-import { MATH_ANSWER_KEY } from "@/data/math_answer_key";
-import { VERBAL_ANSWER_KEY } from "@/data/verbal_answer_key";
-import { SPATIAL_ANSWER_KEY } from "@/data/spatial_answer_key";
-import { MEMORY_ANSWER_KEY } from "@/data/memory_answer_key";
-
-// --- Helper: shuffle array (Fisher–Yates)
+/** --- Helper utilities --- */
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -24,50 +15,39 @@ function shuffle<T>(arr: T[]): T[] {
   }
   return a;
 }
-
-// --- Helper: select N random unique items
 function sample<T>(arr: T[], n: number): T[] {
   if (n >= arr.length) return shuffle(arr);
   return shuffle(arr).slice(0, n);
 }
 
-// --- Category registry
+/** --- Category registry --- */
 export const CATEGORY_INDEX = {
   reasoning: REASONING_QUESTIONS,
   math: MATH_QUESTIONS,
   verbal: VERBAL_QUESTIONS,
   spatial: SPATIAL_QUESTIONS,
-  memory: MEMORY_QUESTIONS
+  memory: MEMORY_QUESTIONS,
 };
 
-// --- Sample config: number of questions per category
+/** --- Sample configuration --- */
 const CATEGORY_SAMPLE = {
   reasoning: 8,
   math: 8,
   verbal: 8,
   spatial: 8,
-  memory: 8
+  memory: 8,
 };
 
-// --- Combined question pool (balanced & shuffled)
+/** --- Combined question pool (balanced & shuffled) --- */
 export const QUESTION_BANK: Question[] = shuffle([
   ...sample(REASONING_QUESTIONS, CATEGORY_SAMPLE.reasoning),
   ...sample(MATH_QUESTIONS, CATEGORY_SAMPLE.math),
   ...sample(VERBAL_QUESTIONS, CATEGORY_SAMPLE.verbal),
   ...sample(SPATIAL_QUESTIONS, CATEGORY_SAMPLE.spatial),
-  ...sample(MEMORY_QUESTIONS, CATEGORY_SAMPLE.memory)
+  ...sample(MEMORY_QUESTIONS, CATEGORY_SAMPLE.memory),
 ]);
 
-// --- Combined answer key
-export const ANSWER_KEY = {
-  ...REASONING_ANSWER_KEY,
-  ...MATH_ANSWER_KEY,
-  ...VERBAL_ANSWER_KEY,
-  ...SPATIAL_ANSWER_KEY,
-  ...MEMORY_ANSWER_KEY
-};
-
-// --- Meta
+/** --- Meta --- */
 export const ALL_CATEGORY_IDS = Object.keys(CATEGORY_INDEX);
 export const BANK_VERSION = "2.1.0" as const;
 
