@@ -16,7 +16,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="app-shell">
         <I18nProvider>{children}</I18nProvider>
         <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );
