@@ -1,12 +1,12 @@
 // /lib/i18n.ts
 export type Dict = Record<string, any>;
 
-/**
- * Simple i18n translator — supports nested keys like "ui.nav.home".
- * Falls back to the provided default if key or dict is missing.
- */
-export function t(dict: Dict | null | undefined, key: string, fallback: string = ""): string {
+export function t(dict: Dict | null | undefined, key: string, fallback = ""): string {
   if (!dict) return fallback;
+  // direct (flattened) hit
+  if (typeof dict[key] === "string") return dict[key];
+
+  // nested traversal
   const parts = key.split(".");
   let cur: any = dict;
   for (const p of parts) {
