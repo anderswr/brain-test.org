@@ -3,7 +3,7 @@ import * as React from "react";
 
 export type Dict = Record<string, any>;
 
-/** Deep merge two nested objects */
+/** Deep merge two nested objects safely */
 function deepMerge(target: Record<string, any>, source: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = { ...target };
   for (const [k, v] of Object.entries(source)) {
@@ -24,21 +24,32 @@ async function loadDict(lang: string): Promise<Dict> {
   for (const file of files) {
     try {
       const mod = await import(`@/locales/${lang}/${file}.json`);
-      merged = deepMerge(merged, mod.default ?? mod);
-    } catch {
-      console.warn(`[i18n] Missing file: ${file}.json`);
+      const data = mod.default ?? mod;
+      merged = deepMerge(merged, data);
+      console.info(`[i18n] Loaded: ${lang}/${file}.json (${Object.keys(data).join(", ")})`);
+    } catch (err) {
+      console.warn(`[i18n] Missing or invalid file: ${lang}/${file}.json`, err);
     }
   }
 
-  // fallback if empty
+  // fallback if merge failed
   if (Object.keys(merged).length === 0 && lang !== "en") {
+    console.warn(`[i18n] Empty dictionary for '${lang}', falling back to English.`);
     return loadDict("en");
   }
+
+  console.log("[i18n] Final merged dict keys:", Object.keys(merged));
+  console.log("[i18n] Has q.math?", !!merged.q?.math);
+
   return merged;
 }
 
 /** Context + hook */
-const I18nContext = React.createContext<{ lang: string; setLang: (l: string) => void; dict: Dict }>({
+const I18nContext = React.createContext<{
+  lang: string;
+  setLang: (l: string) => void;
+  dict: Dict;
+}>({
   lang: "en",
   setLang: () => {},
   dict: {},
