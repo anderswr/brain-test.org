@@ -4,31 +4,30 @@ import * as React from "react";
 
 export type Dict = Record<string, any>;
 
-/** Flatten nested JSON objects into dot keys */
-function flatten(obj: Record<string, any>, prefix = ""): Record<string, any> {
-  return Object.keys(obj).reduce((acc, key) => {
-    const value = obj[key];
-    const newKey = prefix ? `${prefix}.${key}` : key;
-    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      Object.assign(acc, flatten(value, newKey));
+// Deep merge nested objects (preserves dot-path structure)
+function deepMerge<T extends Record<string, any>>(target: T, source: T): T {
+  const out = { ...target };
+  for (const [k, v] of Object.entries(source)) {
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      out[k] = deepMerge(out[k] || {}, v);
     } else {
-      acc[newKey] = value;
+      out[k] = v;
     }
-    return acc;
-  }, {} as Record<string, any>);
+  }
+  return out as T;
 }
 
-/** Load and merge all JSON files in locales/[lang]/ */
-async function loadDict(lang: string): Promise<Dict> {
+// Load and merge all JSON files in locales/[lang]/
+async function loadDict(lang: string) {
   const files = ["en", "reasoning", "math", "verbal", "spatial", "memory"];
-  const merged: Dict = {};
+  let merged: Dict = {};
 
   for (const file of files) {
     try {
       const mod = await import(`@/locales/${lang}/${file}.json`);
-      Object.assign(merged, flatten(mod.default || mod));
+      merged = deepMerge(merged, (mod.default ?? mod) as Dict);
     } catch {
-      console.warn(`[i18n] Missing file: ${file}.json`);
+      // ok if a module is missing (warn once if you want)
     }
   }
 
@@ -38,14 +37,10 @@ async function loadDict(lang: string): Promise<Dict> {
   return merged;
 }
 
-/** Context setup */
-const I18nContext = React.createContext<{
-  lang: string;
-  setLang: (lang: string) => void;
-  dict: Dict;
-}>({ lang: "en", setLang: () => {}, dict: {} });
+const I18nContext = React.createContext<{ lang: string; setLang: (l: string) => void; dict: Dict; }>({
+  lang: "en", setLang: () => {}, dict: {}
+});
 
-/** Provider component */
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLang] = React.useState("en");
   const [dict, setDict] = React.useState<Dict>({});
@@ -54,14 +49,9 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     loadDict(lang).then(setDict);
   }, [lang]);
 
-  return (
-    <I18nContext.Provider value={{ lang, setLang, dict }}>
-      {children}
-    </I18nContext.Provider>
-  );
+  return <I18nContext.Provider value={{ lang, setLang, dict }}>{children}</I18nContext.Provider>;
 }
 
-/** Hook for easy access */
 export function useI18n() {
   return React.useContext(I18nContext);
 }
