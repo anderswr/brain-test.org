@@ -1,6 +1,7 @@
 // app/layout.tsx
-export const metadata = { title: "Free IQ Test", description: "ICAR-based, multilingual" };
+export const metadata = { title: "Free Cognitive Ability IQ-Test", description: "A short, research-inspired IQ estimation across five core cognitive domains." };
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/react";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
