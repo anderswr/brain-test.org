@@ -5,7 +5,6 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
-import { computeIQ } from "@/lib/scoring_iq";
 
 type ResultDoc = {
   id: string;
@@ -40,7 +39,7 @@ export default function ComparePage() {
         fetch(`/api/result/${b}`, { cache: "no-store" })
       ]);
       if (!ra.ok || !rb.ok) {
-        setErr(t(dict, "ui.compare.notfound", "Could not find one or both IDs."));
+        setErr(t(dict, "ui-compare-notfound", "Could not find one or both IDs."));
         return;
       }
       const ja = (await ra.json()) as ResultDoc;
@@ -48,7 +47,7 @@ export default function ComparePage() {
       setAR(ja);
       setBR(jb);
     } catch {
-      setErr(t(dict, "ui.compare.error", "Something went wrong. Please try again."));
+      setErr(t(dict, "ui-compare-error", "Something went wrong. Please try again."));
     } finally {
       setLoading(false);
     }
@@ -68,11 +67,11 @@ export default function ComparePage() {
       <SiteHeader />
       <main className="container" style={{ flex: "1 1 auto" }}>
         <article className="panel head" style={{ padding: 24 }}>
-          <h1 className="mb-2">{t(dict, "ui.nav.compare", "Compare")}</h1>
+          <h1 className="mb-2">{t(dict, "ui-nav-compare", "Compare")}</h1>
           <p className="muted" style={{ marginTop: 6 }}>
             {t(
               dict,
-              "ui.compare.explainer",
+              "ui-compare-explainer",
               "Compare two IQ reports to see changes in reasoning, math, verbal, spatial, and memory performance."
             )}
           </p>
@@ -81,21 +80,21 @@ export default function ComparePage() {
             <input
               className="btn"
               style={{ flex: 1 }}
-              placeholder={t(dict, "ui.compare.id_a", "ID A")}
+              placeholder={t(dict, "ui-compare-id_a", "ID A")}
               value={a}
               onChange={(e) => setA(e.target.value.trim())}
             />
             <input
               className="btn"
               style={{ flex: 1 }}
-              placeholder={t(dict, "ui.compare.id_b", "ID B")}
+              placeholder={t(dict, "ui-compare-id_b", "ID B")}
               value={b}
               onChange={(e) => setB(e.target.value.trim())}
             />
             <button className="btn primary" onClick={run} disabled={!a || !b || loading}>
               {loading
-                ? t(dict, "ui.common.sending", "Loading…")
-                : t(dict, "ui.nav.compare", "Compare")}
+                ? t(dict, "ui-common-sending", "Loading…")
+                : t(dict, "ui-nav-compare", "Compare")}
             </button>
           </div>
           {err && <p style={{ color: "var(--bad)", marginTop: 8 }}>{err}</p>}
@@ -103,7 +102,7 @@ export default function ComparePage() {
 
         {A && B && (
           <>
-            {/* HERO-row (IQ summary) */}
+            {/* IQ summary */}
             <section className="cmp-grid mt-6">
               {[A, B].map((R, i) => {
                 const isA = i === 0;
@@ -113,8 +112,8 @@ export default function ComparePage() {
                       <div className="score-hero__left">
                         <h2 className="mb-1">
                           {isA
-                            ? t(dict, "ui.compare.label_a", "ID A")
-                            : t(dict, "ui.compare.label_b", "ID B")}
+                            ? t(dict, "ui-compare-id_a", "ID A")
+                            : t(dict, "ui-compare-id_b", "ID B")}
                         </h2>
                         <code className="code-badge">{R.id}</code>
                       </div>
@@ -133,7 +132,7 @@ export default function ComparePage() {
               })}
             </section>
 
-            {/* Category-level comparison */}
+            {/* Category comparison */}
             <section className="cmp-rows mt-6">
               {cats.map((cat) => {
                 const aPct = A?.result.perCategory?.[cat]?.percent ?? 0;
@@ -146,18 +145,18 @@ export default function ComparePage() {
                   <div key={cat} className="cmp-grid">
                     <article className="cat-card cmp-cell">
                       <div className="cat-card__head">
-                        <span className="pill">{t(dict, `category.${cat}.name`, cat)}</span>
+                        <span className="pill">{t(dict, `category-${cat}-name`, cat)}</span>
                         <div className="flex items-baseline gap-2">
                           <strong className="cat-card__score">{aPct.toFixed(0)}</strong>
                           <span className="muted">%</span>
                         </div>
                       </div>
-                      <p className="muted">{t(dict, `category.${cat}.desc`, "")}</p>
+                      <p className="muted">{t(dict, `category-${cat}-desc`, "")}</p>
                     </article>
 
                     <article className="cat-card cmp-cell">
                       <div className="cat-card__head">
-                        <span className="pill">{t(dict, `category.${cat}.name`, cat)}</span>
+                        <span className="pill">{t(dict, `category-${cat}-name`, cat)}</span>
                         <div className="flex items-baseline gap-3">
                           <span style={{ color: trendColor, fontWeight: 600 }}>
                             {trend} {Math.abs(diff).toFixed(1)}
@@ -166,7 +165,7 @@ export default function ComparePage() {
                           <span className="muted">%</span>
                         </div>
                       </div>
-                      <p className="muted">{t(dict, `category.${cat}.desc`, "")}</p>
+                      <p className="muted">{t(dict, `category-${cat}-desc`, "")}</p>
                     </article>
                   </div>
                 );
