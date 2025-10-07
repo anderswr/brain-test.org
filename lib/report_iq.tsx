@@ -3,7 +3,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { CategoryId } from "@/lib/types";
 import { IQResult } from "@/lib/scoring_iq";
 import {
   LineChart,
@@ -13,7 +12,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  ReferenceArea
 } from "recharts";
 
 interface ReportIQProps {
@@ -33,27 +31,30 @@ function generateNormalData(mean = 100, sd = 15) {
 
 export default function ReportIQ({ result }: ReportIQProps) {
   const data = generateNormalData();
+  const iq = result.iqEstimate ?? 100;
 
   const iqColor =
-    result.iq >= 130 ? "text-purple-600" :
-    result.iq >= 115 ? "text-green-600" :
-    result.iq >= 100 ? "text-blue-600" :
-    result.iq >= 85  ? "text-yellow-600" :
-                       "text-red-600";
+    iq >= 130 ? "text-purple-600" :
+    iq >= 115 ? "text-green-600" :
+    iq >= 100 ? "text-blue-600" :
+    iq >= 85  ? "text-yellow-600" :
+                "text-red-600";
 
   const interpret =
-    result.iq >= 130 ? "Very high (Gifted range)" :
-    result.iq >= 115 ? "Above average" :
-    result.iq >= 100 ? "Average" :
-    result.iq >= 85  ? "Below average" :
-                       "Low range";
+    iq >= 130 ? "Very high (Gifted range)" :
+    iq >= 115 ? "Above average" :
+    iq >= 100 ? "Average" :
+    iq >= 85  ? "Below average" :
+                "Low range";
 
   return (
     <div className="space-y-10">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-bold">IQ Estimate</h1>
-        <p className="text-gray-600">Based on your answers across 5 cognitive domains.</p>
+        <p className="text-gray-600">
+          Based on your answers across 5 cognitive domains.
+        </p>
       </motion.div>
 
       {/* Total IQ */}
@@ -62,10 +63,7 @@ export default function ReportIQ({ result }: ReportIQProps) {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
       >
-        <div className={`text-6xl font-bold ${iqColor}`}>{result.iq}</div>
-        <div className="text-gray-500 mb-2">
-          Estimated IQ (95% CI {result.ci[0]}–{result.ci[1]})
-        </div>
+        <div className={`text-6xl font-bold ${iqColor}`}>{iq}</div>
         <div className="font-medium text-gray-700">{interpret}</div>
       </motion.div>
 
@@ -83,23 +81,16 @@ export default function ReportIQ({ result }: ReportIQProps) {
                   labelFormatter={(label: number) => `IQ ${label}`}
                 />
                 <Line type="monotone" dataKey="y" stroke="#4f46e5" strokeWidth={2} dot={false} />
-                {/* CI area */}
-                <ReferenceArea
-                  x1={result.ci[0]}
-                  x2={result.ci[1]}
-                  fill="#93c5fd"
-                  fillOpacity={0.3}
-                />
                 {/* User line */}
                 <ReferenceLine
-                  x={result.iq}
+                  x={iq}
                   stroke="#1e40af"
                   strokeWidth={3}
                   label={{
-                    value: `Your IQ: ${result.iq}`,
+                    value: `Your IQ: ${iq}`,
                     position: "top",
                     fill: "#1e3a8a",
-                    fontSize: 12
+                    fontSize: 12,
                   }}
                 />
               </LineChart>
@@ -107,28 +98,31 @@ export default function ReportIQ({ result }: ReportIQProps) {
           </div>
           <p className="text-sm text-gray-500 mt-2 text-center">
             Bell curve showing the normal distribution (Mean = 100, SD = 15).
-            The shaded area represents your 95% confidence interval.
           </p>
         </CardContent>
       </Card>
 
       {/* Category performance */}
       <div className="grid md:grid-cols-2 gap-4">
-        {Object.entries(result.perCategory).map(([cat, data]) => (
+        {Object.entries(result.byCategory).map(([cat, percent]) => (
           <Card key={cat} className="rounded-2xl shadow-sm border border-gray-200">
             <CardContent className="p-4">
               <div className="flex justify-between mb-2">
                 <span className="font-semibold capitalize">{cat}</span>
-                <span>{data.percent.toFixed(0)}%</span>
+                <span>{percent.toFixed(0)}%</span>
               </div>
-              <Progress value={data.percent} />
+              <Progress value={percent} />
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Explanation */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="prose max-w-none text-gray-700">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="prose max-w-none text-gray-700"
+      >
         <h2 className="text-xl font-semibold mt-6 mb-2">About this estimate</h2>
         <p>
           This IQ value is derived using standardized psychometric scaling (mean = 100, SD = 15),

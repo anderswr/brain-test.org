@@ -3,7 +3,7 @@ import * as React from "react";
 
 export type Dict = Record<string, any>;
 
-/** Deep merge two nested objects */
+/** Deep-merge nested objects */
 function deepMerge(target: Record<string, any>, source: Record<string, any>): Record<string, any> {
   const out: Record<string, any> = { ...target };
   for (const [k, v] of Object.entries(source)) {
@@ -16,25 +16,39 @@ function deepMerge(target: Record<string, any>, source: Record<string, any>): Re
   return out;
 }
 
-/** Load and merge all JSON files in locales/[lang]/ */
+/** Flatten nested object to dotted keys.
+ *  { q: { verbal: { "sentence_10.a": "warm" } } }
+ *  -> { "q.verbal.sentence_10.a": "warm" }
+ */
+function flatten(obj: Record<string, any>, prefix = ""): Record<string, any> {
+  const out: Record<string, any> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? `${prefix}.${k}` : k;
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      Object.assign(out, flatten(v, key));
+    } else {
+      out[key] = v;
+    }
+  }
+  return out;
+}
+
+/** Load and merge all JSON files in locales/[lang]/, then flatten */
 async function loadDict(lang: string): Promise<Dict> {
   const files = ["en", "reasoning", "math", "verbal", "spatial", "memory"];
   let merged: Dict = {};
-
   for (const file of files) {
     try {
       const mod = await import(`@/locales/${lang}/${file}.json`);
       merged = deepMerge(merged, mod.default ?? mod);
     } catch {
-      console.warn(`[i18n] Missing file: ${file}.json`);
+      console.warn(`[i18n] Missing file: ${lang}/${file}.json`);
     }
   }
-
-  // fallback if empty
   if (Object.keys(merged).length === 0 && lang !== "en") {
     return loadDict("en");
   }
-  return merged;
+  return flatten(merged);
 }
 
 /** Context + hook */

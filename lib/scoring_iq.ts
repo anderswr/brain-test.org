@@ -1,78 +1,76 @@
 // /lib/scoring_iq.ts
-import { ANSWER_KEY, CATEGORY_INDEX } from "@/data/question_index";
-import { CategoryId, AnswerMap } from "@/lib/types";
+import { CATEGORY_INDEX } from "@/data/question_index";
+import { CategoryId, AnswerMap, Question, isSequence } from "@/lib/types";
 
-export interface IQResult {   // 👈 legg til 'export' her
-  totalCorrect: number;
-  totalQuestions: number;
+export interface IQResult {
+  totalScore: number;
+  maxScore: number;
   percent: number;
-  zScore: number;
-  iq: number;
-  ci: [number, number];
-  perCategory: Record<CategoryId, { correct: number; total: number; percent: number }>;
+  byCategory: Record<CategoryId, number>;
+  iqEstimate: number;
 }
 
-const DEFAULT_NORM = { mean: 70, sd: 15 };
-
-// Optional empirical weight per domain
-const CATEGORY_WEIGHTS: Record<CategoryId, number> = {
-  reasoning: 1.0,
-  math: 0.9,
-  verbal: 1.0,
-  spatial: 1.1,
-  memory: 0.8
-};
-
-/** Compute IQ estimate */
+/**
+ * Beregn resultatet fra brukerens svar.
+ * Scorer alle spørsmål basert på correctIndex eller riktig rekkefølge.
+ */
 export function computeIQ(answers: AnswerMap): IQResult {
-  const perCategory: any = {};
-  let totalCorrect = 0;
-  let totalQuestions = 0;
-
-  (Object.keys(CATEGORY_INDEX) as CategoryId[]).forEach(cat => {
-    const qs = CATEGORY_INDEX[cat];
-    const key = ANSWER_KEY as Record<string, any>;
-    let correct = 0;
-
-    qs.forEach(q => {
-      const userAns = answers[q.id];
-      const truth = key[q.id];
-      if (!userAns || truth === undefined) return;
-      if (Array.isArray(truth)) {
-        // Sequence-type: partial credit
-        const matchCount = truth.filter((v: any, i: number) => userAns[i] === v).length;
-        correct += matchCount / truth.length;
-      } else if (userAns === truth) {
-        correct += 1;
-      }
-    });
-
-    const total = qs.length;
-    totalCorrect += correct * CATEGORY_WEIGHTS[cat];
-    totalQuestions += total * CATEGORY_WEIGHTS[cat];
-    perCategory[cat] = {
-      correct,
-      total,
-      percent: (correct / total) * 100
-    };
-  });
-
-  const percent = (totalCorrect / totalQuestions) * 100;
-
-  // Convert to Z and IQ
-  const z = (percent - DEFAULT_NORM.mean) / DEFAULT_NORM.sd;
-  const iq = 100 + 15 * z;
-
-  const sem = 15 / Math.sqrt(Object.keys(CATEGORY_INDEX).length);
-  const ci: [number, number] = [iq - 1.96 * sem, iq + 1.96 * sem];
-
-  return {
-    totalCorrect,
-    totalQuestions,
-    percent,
-    zScore: z,
-    iq: Math.round(iq),
-    ci: [Math.round(ci[0]), Math.round(ci[1])],
-    perCategory
+  let totalScore = 0;
+  let maxScore = 0;
+  const byCategory: Record<CategoryId, number> = {
+    reasoning: 0,
+    math: 0,
+    verbal: 0,
+    spatial: 0,
+    memory: 0,
   };
+  const categoryTotals: Record<CategoryId, number> = {
+    reasoning: 0,
+    math: 0,
+    verbal: 0,
+    spatial: 0,
+    memory: 0,
+  };
+
+  for (const [categoryId, questions] of Object.entries(CATEGORY_INDEX) as [
+    CategoryId,
+    Question[]
+  ][]) {
+    for (const q of questions) {
+      const ans = answers[q.id];
+      let score = 0;
+
+      if ("correctIndex" in q && typeof ans === "number") {
+        // multiple / visual / matrix
+        score = ans === q.correctIndex ? 1 : 0;
+      } else if (isSequence(q) && Array.isArray(ans)) {
+        // sequence (rekkefølge) — enkel delvis poeng
+        const correct = q.answerSequence;
+        let correctPairs = 0;
+        for (let i = 0; i < ans.length; i++) {
+          if (ans[i] === correct[i]) correctPairs++;
+        }
+        score = correctPairs / ans.length;
+      }
+
+      totalScore += score;
+      maxScore += 1;
+      byCategory[categoryId] += score;
+      categoryTotals[categoryId] += 1;
+    }
+  }
+
+  // Normaliser kategoripoeng til 0–100
+  for (const c of Object.keys(byCategory) as CategoryId[]) {
+    if (categoryTotals[c] > 0) {
+      byCategory[c] = (byCategory[c] / categoryTotals[c]) * 100;
+    }
+  }
+
+  // Samlet prosent
+  const percent = (totalScore / maxScore) * 100;
+  // Estimert IQ (enkelt lineært mapping: mean=100, sd=15)
+  const iqEstimate = Math.round(100 + ((percent - 50) / 50) * 15);
+
+  return { totalScore, maxScore, percent, byCategory, iqEstimate };
 }

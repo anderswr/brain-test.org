@@ -61,7 +61,8 @@ export default function TestPage() {
                 checked={answers[q.id] === key}
                 onChange={() => setChoice(key)}
               />
-              <span>{t(dict, key)}</span>
+              {/* ✅ Korrigert nøkkeloppslag for alternativer */}
+              <span>{t(dict, `${q.textKey}.${key}`)}</span>
             </label>
           ))}
         </div>
@@ -83,7 +84,7 @@ export default function TestPage() {
                 alignItems: "center",
               }}
             >
-              {t(dict, key)}
+              {t(dict, `${q.textKey}.${key}`)}
             </div>
           ))}
           <p className="muted text-sm">
@@ -130,7 +131,9 @@ export default function TestPage() {
             {idx < QUESTION_BANK.length - 1 ? (
               <button
                 className="btn"
-                onClick={() => setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))}
+                onClick={() =>
+                  setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))
+                }
                 disabled={!answers[item.id] || submitting}
               >
                 {t(dict, "cta.continue", "Continue")} →
@@ -140,7 +143,8 @@ export default function TestPage() {
                 className="btn"
                 onClick={submit}
                 disabled={
-                  Object.keys(answers).length !== QUESTION_BANK.length || submitting
+                  Object.keys(answers).length !== QUESTION_BANK.length ||
+                  submitting
                 }
               >
                 {t(dict, "cta.submit", "Finish and see result")} ✓
@@ -149,7 +153,15 @@ export default function TestPage() {
           </div>
 
           {error && (
-            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>{error}</p>
+            <p
+              style={{
+                color: "#f87171",
+                marginTop: 8,
+                fontSize: 14,
+              }}
+            >
+              {error}
+            </p>
           )}
         </div>
       </main>
