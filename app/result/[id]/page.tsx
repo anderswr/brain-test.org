@@ -74,27 +74,27 @@ export default function ResultPage({ params }: { params: { id: string } }) {
       <main className="container">
         {!data ? (
           <article className="card p-6">
-            <p className="muted">Loading…</p>
+            <p className="muted">{t(dict, "ui-common-loading", "Loading…")}</p>
           </article>
         ) : (
           <>
             {/* --- HEADER --- */}
             <article className="panel head p-6 score-hero">
               <div className="score-hero__left">
-                <h1>{t(dict, "ui.result.title", "Your IQ Result")}</h1>
+                <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
                 <div className="row" style={{ gap: 8, alignItems: "center" }}>
                   <code className="code-badge">{data.id}</code>
                   <button
                     className="btn"
                     onClick={() => navigator.clipboard.writeText(data.id)}
                   >
-                    {t(dict, "ui.result.copy_id", "Copy ID")}
+                    {t(dict, "ui-result-copy_id", "Copy ID")}
                   </button>
                 </div>
                 <p className="muted mt-3">
                   {t(
                     dict,
-                    "ui.result.disclaimer_iq",
+                    "ui-result-disclaimer_iq",
                     "This IQ estimate is calculated from your responses using a normalized z-score across five cognitive domains: reasoning, math, verbal, spatial, and memory."
                   )}
                 </p>
@@ -115,22 +115,22 @@ export default function ResultPage({ params }: { params: { id: string } }) {
               {categories.map(([cat, val]) => (
                 <article key={cat} className="cat-card" data-color="blue">
                   <div className="cat-card__head">
-                    <span className="pill">{t(dict, `category.${cat}.name`, cat)}</span>
+                    <span className="pill">{t(dict, `category-${cat}-name`, cat)}</span>
                     <strong className="cat-card__score">{val.percent.toFixed(0)}%</strong>
                   </div>
-                  <p className="muted">{t(dict, `category.${cat}.desc`, "")}</p>
+                  <p className="muted">{t(dict, `category-${cat}-desc`, "")}</p>
                 </article>
               ))}
             </section>
 
             {/* --- IQ DISTRIBUTION --- */}
             <section className="panel mt-8 p-6">
-              <h2 className="mb-3">{t(dict, "ui.result.iq_distribution", "IQ Distribution")}</h2>
+              <h2 className="mb-3">{t(dict, "ui-result-iq_distribution", "IQ Distribution")}</h2>
               <IQBellChart userIQ={data.result.iq} ci={data.result.ci} />
               <p className="muted mt-3">
                 {t(
                   dict,
-                  "ui.result.iq_explainer_short",
+                  "ui-result-iq_explainer_short",
                   "Your IQ estimate (mean = 100, SD = 15) is plotted on a normal curve. Most people fall between 85 – 115. Shaded regions mark typical ranges used in research and education."
                 )}
               </p>
@@ -164,7 +164,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
   );
 }
 
-/** 🔷 Normalfordelingsgraf for IQ (μ=100, σ=15) med intervaller */
+/** 🔷 Normal distribution graph for IQ (μ=100, σ=15) */
 function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
   const mu = 100;
   const sigma = 15;
@@ -179,7 +179,6 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
 
   const maxY = Math.max(...points.map((p) => p.y));
 
-  // Fargeintervaller (Cattell-lignende kategorier)
   const ranges = [
     { from: 55, to: 69, label: "Below 70 – Very Low", color: "#f87171" },
     { from: 70, to: 84, label: "70–84 – Below Average", color: "#fbbf24" },
@@ -202,7 +201,6 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
           <YAxis hide domain={[0, maxY]} />
           <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
 
-          {/* Bakgrunnsfarger for nivåer */}
           {ranges.map((r) => (
             <ReferenceArea
               key={r.label}
@@ -238,7 +236,6 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
             fill="url(#colorIQ)"
           />
 
-          {/* IQ-linje */}
           <ReferenceLine
             x={userIQ}
             stroke="#ef4444"
@@ -250,7 +247,6 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
               fontWeight: 600
             }}
           />
-          {/* CI-linjer */}
           <ReferenceLine
             x={ci[0]}
             stroke="#ef4444"
