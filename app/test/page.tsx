@@ -16,12 +16,8 @@ export default function TestPage() {
 
   const item = QUESTION_BANK[idx] as Question;
 
-  function setChoice(index: number) {
-    setAnswers((a) => ({ ...a, [item.id]: index })); // store numeric index
-  }
-
-  function setSequence(order: number[]) {
-    setAnswers((a) => ({ ...a, [item.id]: order }));
+  function setChoice(choice: any) {
+    setAnswers((a) => ({ ...a, [item.id]: choice }));
   }
 
   async function submit() {
@@ -44,7 +40,7 @@ export default function TestPage() {
 
   /** Render multiple/visual/sequence question appropriately */
   function renderQuestion(q: Question) {
-    // Multiple-choice + visual/matrix (they all have optionsKey)
+    // 🔹 Multiple-choice og visual
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
@@ -52,67 +48,55 @@ export default function TestPage() {
             <label
               key={i}
               className="card"
-              style={{ padding: 12, display: "flex", gap: 8, alignItems: "center" }}
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+              }}
             >
               <input
                 type="radio"
                 name={`q-${q.id}`}
-                checked={answers[q.id] === i}
-                onChange={() => setChoice(i)}
+                checked={answers[q.id] === key}
+                onChange={() => setChoice(key)}
               />
-              <span>{t(dict, key, key)}</span>
+              {/* ✅ Korrigert nøkkeloppslag for alternativer */}
+              <span>{t(dict, `${q.textKey}.${key}`)}</span>
             </label>
           ))}
         </div>
       );
     }
 
-    // Sequence-type (simple usable controls so you can proceed)
+    // 🔹 Sequence-type (rekkefølgespørsmål)
     if ("itemsKey" in q) {
-      const items = q.itemsKey;
-      const shownOrder = items.map((_, i) => i);
-
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {items.map((key: string, i: number) => (
-            <div key={i} className="card" style={{ padding: 12 }}>
-              {t(dict, key, key)}
+          {q.itemsKey.map((key: string, i: number) => (
+            <div
+              key={i}
+              className="card"
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+              }}
+            >
+              {t(dict, `${q.textKey}.${key}`)}
             </div>
           ))}
-          <div style={{ display: "flex", gap: 8 }}>
-            <button className="btn" onClick={() => setSequence(shownOrder)}>
-              Use shown order
-            </button>
-            <button className="btn" onClick={() => setSequence([...shownOrder].reverse())}>
-              Use reverse order
-            </button>
-            <button
-              className="btn"
-              onClick={() =>
-                setSequence(
-                  [...shownOrder].sort(() => Math.random() - 0.5)
-                )
-              }
-            >
-              Randomize once
-            </button>
-          </div>
-          <p className="muted text-sm">(Temporary controls; drag & drop coming later)</p>
+          <p className="muted text-sm">
+            (Sequence questions are not interactive yet)
+          </p>
         </div>
       );
     }
 
+    // 🔹 Hvis ukjent type
     return <p>Unsupported question type</p>;
   }
-
-  const hasAnswer = (() => {
-    const a = answers[item.id];
-    if (Array.isArray(a)) {
-      const needed = ("itemsKey" in item) ? item.itemsKey.length : 0;
-      return a.length === needed;
-    }
-    return typeof a === "number";
-  })();
 
   return (
     <div>
@@ -120,14 +104,20 @@ export default function TestPage() {
       <main style={{ marginTop: 16 }}>
         <div className="card">
           <div
-            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 12,
+            }}
           >
-            <div style={{ fontWeight: 600 }}>{t(dict, item.textKey, item.textKey)}</div>
+            <div style={{ fontWeight: 600 }}>{t(dict, item.textKey)}</div>
             <div style={{ opacity: 0.6, fontSize: 12 }}>
               {idx + 1} / {QUESTION_BANK.length}
             </div>
           </div>
 
+          {/* Dynamisk renderer basert på question type */}
           {renderQuestion(item)}
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
@@ -136,13 +126,15 @@ export default function TestPage() {
               onClick={() => setIdx((i) => Math.max(0, i - 1))}
               disabled={idx === 0 || submitting}
             >
-              ← {t(dict, "ui.common.back", "Back")}
+              ← {t(dict, "cta.continue", "Back")}
             </button>
             {idx < QUESTION_BANK.length - 1 ? (
               <button
                 className="btn"
-                onClick={() => setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))}
-                disabled={!hasAnswer || submitting}
+                onClick={() =>
+                  setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))
+                }
+                disabled={!answers[item.id] || submitting}
               >
                 {t(dict, "cta.continue", "Continue")} →
               </button>
@@ -151,7 +143,8 @@ export default function TestPage() {
                 className="btn"
                 onClick={submit}
                 disabled={
-                  Object.keys(answers).length !== QUESTION_BANK.length || submitting
+                  Object.keys(answers).length !== QUESTION_BANK.length ||
+                  submitting
                 }
               >
                 {t(dict, "cta.submit", "Finish and see result")} ✓
@@ -159,7 +152,17 @@ export default function TestPage() {
             )}
           </div>
 
-          {error && <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>{error}</p>}
+          {error && (
+            <p
+              style={{
+                color: "#f87171",
+                marginTop: 8,
+                fontSize: 14,
+              }}
+            >
+              {error}
+            </p>
+          )}
         </div>
       </main>
       <SiteFooter />
