@@ -26,7 +26,7 @@ export default function TestPage() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ answers, lang }),
+        body: JSON.stringify({ answers, lang })
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "submit_failed");
@@ -40,7 +40,7 @@ export default function TestPage() {
 
   /** Render multiple/visual/sequence question appropriately */
   function renderQuestion(q: Question) {
-    // 🔹 Multiple-choice og visual
+    // 🔹 Multiple-choice / visual
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
@@ -52,7 +52,7 @@ export default function TestPage() {
                 padding: 12,
                 display: "flex",
                 gap: 8,
-                alignItems: "center",
+                alignItems: "center"
               }}
             >
               <input
@@ -61,15 +61,15 @@ export default function TestPage() {
                 checked={answers[q.id] === key}
                 onChange={() => setChoice(key)}
               />
-              {/* ✅ Korrigert nøkkeloppslag for alternativer */}
-              <span>{t(dict, `${q.textKey}.${key}`)}</span>
+              {/* ✅ bruker flat nøkkelstruktur: q-[domain]-[nr]-[bokstav] */}
+              <span>{t(dict, `${q.textKey}-${key}`)}</span>
             </label>
           ))}
         </div>
       );
     }
 
-    // 🔹 Sequence-type (rekkefølgespørsmål)
+    // 🔹 Sequence-type
     if ("itemsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
@@ -81,20 +81,18 @@ export default function TestPage() {
                 padding: 12,
                 display: "flex",
                 gap: 8,
-                alignItems: "center",
+                alignItems: "center"
               }}
             >
-              {t(dict, `${q.textKey}.${key}`)}
+              {t(dict, `${q.textKey}-${key}`)}
             </div>
           ))}
-          <p className="muted text-sm">
-            (Sequence questions are not interactive yet)
-          </p>
+          <p className="muted text-sm">(Sequence questions are not interactive yet)</p>
         </div>
       );
     }
 
-    // 🔹 Hvis ukjent type
+    // 🔹 fallback
     return <p>Unsupported question type</p>;
   }
 
@@ -108,7 +106,7 @@ export default function TestPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 12,
+              marginBottom: 12
             }}
           >
             <div style={{ fontWeight: 600 }}>{t(dict, item.textKey)}</div>
@@ -117,7 +115,6 @@ export default function TestPage() {
             </div>
           </div>
 
-          {/* Dynamisk renderer basert på question type */}
           {renderQuestion(item)}
 
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
@@ -126,8 +123,9 @@ export default function TestPage() {
               onClick={() => setIdx((i) => Math.max(0, i - 1))}
               disabled={idx === 0 || submitting}
             >
-              ← {t(dict, "cta.continue", "Back")}
+              ← {t(dict, "cta-continue", "Back")}
             </button>
+
             {idx < QUESTION_BANK.length - 1 ? (
               <button
                 className="btn"
@@ -136,7 +134,7 @@ export default function TestPage() {
                 }
                 disabled={!answers[item.id] || submitting}
               >
-                {t(dict, "cta.continue", "Continue")} →
+                {t(dict, "cta-continue", "Continue")} →
               </button>
             ) : (
               <button
@@ -147,7 +145,7 @@ export default function TestPage() {
                   submitting
                 }
               >
-                {t(dict, "cta.submit", "Finish and see result")} ✓
+                {t(dict, "cta-submit", "Finish and see result")} ✓
               </button>
             )}
           </div>
@@ -157,7 +155,7 @@ export default function TestPage() {
               style={{
                 color: "#f87171",
                 marginTop: 8,
-                fontSize: 14,
+                fontSize: 14
               }}
             >
               {error}
