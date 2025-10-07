@@ -17,15 +17,15 @@ export default function ResultIndex() {
       <SiteHeader />
       <main className="container page-main">
         <section className="panel head p-6">
-          <h1>{t(dict, "ui.result.title", "Your IQ Result")}</h1>
+          <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
           <p className="muted">
-            {t(dict, "ui.result.lookup_hint", "Paste your test ID to open your IQ report.")}
+            {t(dict, "ui-result-lookup_hint", "Paste your test ID to open your IQ report.")}
           </p>
           <div className="row" style={{ gap: 8, marginTop: 12 }}>
             <input
               className="btn"
               style={{ flex: 1, textAlign: "left" }}
-              placeholder={t(dict, "ui.result.id_placeholder", "Your ID")}
+              placeholder={t(dict, "ui-result-id_placeholder", "Your ID")}
               value={id}
               onChange={(e) => setId(e.target.value.trim())}
             />
@@ -33,7 +33,7 @@ export default function ResultIndex() {
               className="btn primary"
               onClick={() => id && router.push(`/result/${id}`)}
             >
-              {t(dict, "ui.common.read", "Read")}
+              {t(dict, "ui-common-read", "Read")}
             </button>
           </div>
         </section>
