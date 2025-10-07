@@ -1,5 +1,4 @@
 // /lib/scoring.ts
-
 import {
   AnswerMap,
   Question,
@@ -15,6 +14,7 @@ import {
   isSequence,
   isRecall,
 } from "@/lib/types";
+import { t } from "@/lib/i18n";
 
 /* ---------- Utility helpers ---------- */
 
@@ -30,10 +30,7 @@ const mapPercentToIQ = (p: number) => Math.round(85 + p * 60);
 
 /* ---------- Scoring of individual kinds ---------- */
 
-function scoreChoiceLike(
-  q: { correctIndex: number },
-  ans: unknown
-): number {
+function scoreChoiceLike(q: { correctIndex: number }, ans: unknown): number {
   return typeof ans === "number" && ans === q.correctIndex ? 1 : 0;
 }
 
@@ -174,10 +171,21 @@ export function computeCategoryMean(
   return mean(subset.map((p) => p.score01)) * 100;
 }
 
-// Bucket IQ into qualitative labels if desired
-export function iqLabel(iq: number): string {
-  if (iq < 90) return "Below average";
-  if (iq < 110) return "Average";
-  if (iq < 130) return "Above average";
-  return "High";
+/* ---------- IQ label helper (i18n aware) ---------- */
+
+/**
+ * Returns qualitative IQ label (translated if dict provided)
+ */
+export function iqLabel(iq: number, dict?: Record<string, string>): string {
+  if (!dict) {
+    if (iq < 90) return "Below average";
+    if (iq < 110) return "Average";
+    if (iq < 130) return "Above average";
+    return "High";
+  }
+
+  if (iq < 90) return t(dict, "iq-label-below", "Below average");
+  if (iq < 110) return t(dict, "iq-label-average", "Average");
+  if (iq < 130) return t(dict, "iq-label-above", "Above average");
+  return t(dict, "iq-label-high", "High");
 }
