@@ -188,6 +188,7 @@ export default function TestPage() {
     return <p>Unsupported question type</p>;
   }
 
+  // Debug hvilken oppgave som vises
   React.useEffect(() => {
     console.debug(
       `[STATE] Showing #${idx + 1}/${QUESTION_BANK.length} →`,
