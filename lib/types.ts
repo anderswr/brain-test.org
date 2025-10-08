@@ -1,9 +1,9 @@
 // /lib/types.ts
 
-// Version this bank of questions so results can record compatibility.
-export const BANK_VERSION = "iq-bank-1.0.0" as const;
+/** Versioning for question compatibility */
+export const BANK_VERSION = "iq-bank-2.0.0" as const;
 
-/** Five core IQ categories */
+/** Core cognitive domains */
 export enum CategoryId {
   Reasoning = "reasoning",
   Math = "math",
@@ -22,94 +22,67 @@ export const ALL_CATEGORIES: CategoryId[] = [
 
 /** Supported question kinds */
 export type QuestionKind =
-  | "multiple"  // classic MCQ (A–D) – scored 0/1
-  | "sequence"  // order items (e.g., numbers/words) – partial credit possible
-  | "matrix"    // image matrix (PNG) with MCQ options – scored 0/1
-  | "visual"    // single visual transform/rotation (PNG) – scored 0/1
-  | "recall";   // recall a short list (strings/numbers) – partial credit possible
+  | "multiple"  // text-based multiple choice
+  | "matrix"    // image matrix with multiple choice
+  | "visual"    // visual rotation/matching with image
+  | "sequence"  // order the given items
+  | "recall";   // recall short list of words/numbers
 
-/** Common fields across questions */
+/** Base structure shared by all questions */
 export interface BaseQuestion {
-  id: string;                 // globally unique (e.g., "r1", "m17")
+  id: string;                 // e.g. "r1", "m12"
   kind: QuestionKind;
   category: CategoryId;
-  textKey: string;            // i18n key for the prompt/instructions
-  infoKey?: string;           // optional i18n helper text
-  weight?: number;            // default 1; can tweak category influence
-  timeLimitSec?: number;      // optional soft time limit per item
+  textKey: string;            // i18n key for the prompt (flat, e.g. "q-math-01")
+  infoKey?: string;           // optional hint/extra instruction
+  weight?: number;            // default: 1
+  timeLimitSec?: number;      // optional soft limit
 }
 
-/** Multiple-choice style (also used by matrix/visual) */
+/** Choice-based question (MCQ) */
 export interface ChoiceLike {
-  // i18n keys for options; typically length 4 (A–D)
-  optionsKey: string[];
-  // index (0-based) of correct option
-  correctIndex: number;
+  optionsKey: string[];       // flat keys, e.g. ["q-math-01-a", "q-math-01-b", ...]
+  correctIndex: number;       // index (0-based)
 }
 
-/** MULTIPLE: Text-only MCQ */
+/** MULTIPLE: Text-only question */
 export interface MultipleQuestion extends BaseQuestion, ChoiceLike {
   kind: "multiple";
 }
 
-/** MATRIX: Visual matrix with PNG + MCQ */
+/** MATRIX: Pattern recognition matrix with image */
 export interface MatrixQuestion extends BaseQuestion, ChoiceLike {
   kind: "matrix";
-  image: string; // e.g., "/assets/img/q/spatial/s05.png"
+  image: string;              // image path, e.g. "/assets/img/q/spatial/s01.png"
 }
 
-/** VISUAL: Single figure transform/rotation with PNG + MCQ */
+/** VISUAL: Single rotation/match question with image */
 export interface VisualQuestion extends BaseQuestion, ChoiceLike {
   kind: "visual";
   image: string;
 }
 
-/** SEQUENCE: User orders N items; answers expressed by index order */
+/** SEQUENCE: Order given items correctly */
 export interface SequenceQuestion extends BaseQuestion {
   kind: "sequence";
-  /**
-   * The correct order as indices into the shown items (0..N-1).
-   * UI will present items derived from i18n keys (see `itemsKey`).
-   */
-  answerSequence: number[];
-  /**
-   * i18n keys for the displayed items to be ordered.
-   * Example: ["q.reasoning.seq_03.i1", "q.reasoning.seq_03.i2", ...]
-   */
-  itemsKey: string[];
-  /**
-   * If true, allow partial credit when a subset is in correct relative order.
-   * Default true.
-   */
-  partialCredit?: boolean;
+  itemsKey: string[];         // flat keys for items, e.g. ["q-math-seq_01-i1", "q-math-seq_01-i2"]
+  answerSequence: number[];   // correct order as indices
+  partialCredit?: boolean;    // if true, partial scoring allowed
 }
 
-/** RECALL: User recalls a small set of tokens after delay */
+/** RECALL: Remember and recall short list of tokens */
 export type RecallToken = string | number;
 
 export interface RecallQuestion extends BaseQuestion {
   kind: "recall";
-  /**
-   * The expected tokens. By default, order matters.
-   * Example: ["book", "rain", "stone", "window"]
-   */
   correctAnswer: RecallToken[];
-  /**
-   * Matching behavior:
-   *  - "exact": case-sensitive string compare / numeric equality (default)
-   *  - "ci": case-insensitive for strings
-   *  - "set": order-insensitive; score by intersection size
-   */
-  match: "exact" | "ci" | "set";
-  /** Whether order matters (ignored when match === "set"). Default: true */
+  match: "exact" | "ci" | "set";  // matching rule
   orderSensitive?: boolean;
-  /** Optional normalization regex i18n key (e.g., to strip punctuation) */
   normalizeKey?: string;
-  /** Optional maximum accepted Levenshtein distance per string token (0 = exact) */
   maxEditDistance?: number;
 }
 
-/** Union of all question types */
+/** Unified question type */
 export type Question =
   | MultipleQuestion
   | MatrixQuestion
@@ -117,47 +90,43 @@ export type Question =
   | SequenceQuestion
   | RecallQuestion;
 
-/** Map of questionId -> user's answer value */
-export type AnswerValue =
-  | number                 // for choice-like: selected index 0..n-1
-  | number[]               // for sequence: order of indices
-  | RecallToken[];         // for recall: array of tokens
-
+/** User answers */
+export type AnswerValue = number | number[] | RecallToken[];
 export type AnswerMap = Record<string, AnswerValue>;
 
-/** Per-question scored result (0–1 for correctness or partial credit) */
+/** Per-question scoring data */
 export interface PerQuestionScore {
   id: string;
   kind: QuestionKind;
   category: CategoryId;
-  weight: number;          // effective weight used in scoring
-  score01: number;         // 0..1 normalized score for the question
+  weight: number;
+  score01: number; // normalized 0..1
 }
 
-/** Category scores normalized to 0–100 (higher = better performance) */
+/** Category scores normalized to 0–100 */
 export type CategoryScores = Record<CategoryId, number>;
 
-/** Raw counts for transparency/debugging */
+/** Raw score data */
 export interface RawCounts {
   totalQuestions: number;
-  totalWeighted: number;     // sum of weights
-  totalCorrectWeighted: number; // sum(score01 * weight)
+  totalWeighted: number;
+  totalCorrectWeighted: number;
 }
 
-/** Final computed result returned by the scorer */
+/** Final computed test result */
 export interface ComputedResult {
-  version: string;                // BANK_VERSION
-  categoryScores: CategoryScores; // 0..100 (higher = better)
-  totalPercent: number;           // 0..100 overall performance
-  iqEstimate: number;             // mapped estimate (see scoring.ts)
-  perQuestion: PerQuestionScore[];// breakdown for review/analytics
-  raw: RawCounts;                 // raw totals
+  version: string;
+  categoryScores: CategoryScores;
+  totalPercent: number;
+  iqEstimate: number;
+  perQuestion: PerQuestionScore[];
+  raw: RawCounts;
 }
 
-/** Lightweight index for building category -> ids mapping */
+/** Lightweight category→IDs index */
 export type ByCategoryIndex = Record<CategoryId, string[]>;
 
-/** Type guards for runtime narrowing */
+/** Type guards */
 export const isMultiple = (q: Question): q is MultipleQuestion => q.kind === "multiple";
 export const isMatrix   = (q: Question): q is MatrixQuestion   => q.kind === "matrix";
 export const isVisual   = (q: Question): q is VisualQuestion   => q.kind === "visual";
