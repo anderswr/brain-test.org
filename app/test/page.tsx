@@ -19,7 +19,20 @@ export default function TestPage() {
 
   /** Setter valgt svar (brukes for MCQ og visual) */
   function setChoice(choice: any) {
-    setAnswers((a) => ({ ...a, [item.id]: choice }));
+    setAnswers((a) => {
+      const updated = { ...a, [item.id]: choice };
+
+      // 🔹 Automatisk gå videre (eller send inn hvis siste spørsmål)
+      setTimeout(() => {
+        if (idx < QUESTION_BANK.length - 1) {
+          setIdx((i) => Math.min(i + 1, QUESTION_BANK.length - 1));
+        } else {
+          submit();
+        }
+      }, 250);
+
+      return updated;
+    });
   }
 
   /** Viser oversatt tekst + nøkkel for debugging */
@@ -75,7 +88,7 @@ export default function TestPage() {
                 type="radio"
                 name={`q-${q.id}`}
                 checked={answers[q.id] === optKey}
-                onChange={() => setChoice(optKey)}
+                onChange={() => setChoice(optKey)} // 🔹 her trigges auto-next
               />
               {renderText(dict, optKey, `Missing: ${optKey}`)}
             </label>
