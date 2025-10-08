@@ -98,7 +98,12 @@ export const MATH_QUESTIONS: Question[] = [
     category: CategoryId.Math,
     textKey: "q-math-11",
     itemsKey: ["q-math-11-i1", "q-math-11-i2", "q-math-11-i3", "q-math-11-i4"],
-    answerSequence: [3, 2, 1, 0],
+    answerSequence: [
+      "q-math-11-i4",
+      "q-math-11-i3",
+      "q-math-11-i2",
+      "q-math-11-i1",
+    ],
     partialCredit: true,
   },
   {
@@ -107,7 +112,12 @@ export const MATH_QUESTIONS: Question[] = [
     category: CategoryId.Math,
     textKey: "q-math-12",
     itemsKey: ["q-math-12-i1", "q-math-12-i2", "q-math-12-i3", "q-math-12-i4"],
-    answerSequence: [1, 2, 0, 3],
+    answerSequence: [
+      "q-math-12-i2",
+      "q-math-12-i3",
+      "q-math-12-i1",
+      "q-math-12-i4",
+    ],
     partialCredit: true,
   },
 
@@ -139,7 +149,12 @@ export const MATH_QUESTIONS: Question[] = [
       kind: "multiple" as const,
       category: CategoryId.Math,
       textKey: `q-math-${n}`,
-      optionsKey: [`q-math-${n}-a`, `q-math-${n}-b`, `q-math-${n}-c`, `q-math-${n}-d`],
+      optionsKey: [
+        `q-math-${n}-a`,
+        `q-math-${n}-b`,
+        `q-math-${n}-c`,
+        `q-math-${n}-d`,
+      ],
       correctIndex: (i * 3) % 4,
     };
   }),
