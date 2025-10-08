@@ -15,6 +15,7 @@ function shuffle<T>(arr: T[]): T[] {
   }
   return a;
 }
+
 function sample<T>(arr: T[], n: number): T[] {
   if (n >= arr.length) return shuffle(arr);
   return shuffle(arr).slice(0, n);
@@ -29,7 +30,7 @@ export const CATEGORY_INDEX = {
   memory: MEMORY_QUESTIONS,
 };
 
-/** --- Sample configuration --- */
+/** --- Sampling config (balance categories) --- */
 const CATEGORY_SAMPLE = {
   reasoning: 8,
   math: 8,
@@ -38,7 +39,7 @@ const CATEGORY_SAMPLE = {
   memory: 8,
 };
 
-/** --- Combined question pool (balanced & shuffled) --- */
+/** --- Combined shuffled question set --- */
 export const QUESTION_BANK: Question[] = shuffle([
   ...sample(REASONING_QUESTIONS, CATEGORY_SAMPLE.reasoning),
   ...sample(MATH_QUESTIONS, CATEGORY_SAMPLE.math),
