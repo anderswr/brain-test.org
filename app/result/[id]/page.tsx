@@ -15,7 +15,7 @@ import {
   Tooltip,
   ResponsiveContainer,
   ReferenceLine,
-  ReferenceArea
+  ReferenceArea,
 } from "recharts";
 
 type IQResult = {
@@ -25,7 +25,7 @@ type IQResult = {
   perCategory: Record<string, { percent: number }>;
 };
 
-type ResultDoc = { id: string; result: IQResult };
+type ResultDoc = { id: string; result?: IQResult };
 
 export default function ResultPage({ params }: { params: { id: string } }) {
   const { dict } = useI18n();
@@ -41,8 +41,14 @@ export default function ResultPage({ params }: { params: { id: string } }) {
           return;
         }
         const json = await res.json();
+        // sanity-check: ensure json.result exists
+        if (!json?.result || typeof json.result.iq !== "number") {
+          setNotFound(true);
+          return;
+        }
         setData(json);
-      } catch {
+      } catch (err) {
+        console.error("Result fetch failed", err);
         setNotFound(true);
       }
     })();
@@ -68,75 +74,94 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     );
   }
 
+  if (!data) {
+    return (
+      <div className="app-shell">
+        <SiteHeader />
+        <main className="container">
+          <article className="card p-6">
+            <p className="muted">{t(dict, "ui-common-loading", "Loading…")}</p>
+          </article>
+        </main>
+        <SiteFooter />
+      </div>
+    );
+  }
+
+  const iq = data.result?.iq ?? 100;
+  const ci = data.result?.ci ?? [90, 110];
+
   return (
     <div className="app-shell">
       <SiteHeader />
       <main className="container">
-        {!data ? (
-          <article className="card p-6">
-            <p className="muted">{t(dict, "ui-common-loading", "Loading…")}</p>
-          </article>
-        ) : (
-          <>
-            {/* --- HEADER --- */}
-            <article className="panel head p-6 score-hero">
-              <div className="score-hero__left">
-                <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
-                <div className="row" style={{ gap: 8, alignItems: "center" }}>
-                  <code className="code-badge">{data.id}</code>
-                  <button
-                    className="btn"
-                    onClick={() => navigator.clipboard.writeText(data.id)}
-                  >
-                    {t(dict, "ui-result-copy_id", "Copy ID")}
-                  </button>
+        {/* --- HEADER --- */}
+        <article className="panel head p-6 score-hero">
+          <div className="score-hero__left">
+            <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
+            <div className="row" style={{ gap: 8, alignItems: "center" }}>
+              <code className="code-badge">{data.id}</code>
+              <button
+                className="btn"
+                onClick={() => navigator.clipboard.writeText(data.id)}
+              >
+                {t(dict, "ui-result-copy_id", "Copy ID")}
+              </button>
+            </div>
+            <p className="muted mt-3">
+              {t(
+                dict,
+                "ui-result-disclaimer_iq",
+                "This IQ estimate is calculated from your responses using a normalized z-score across five cognitive domains."
+              )}
+            </p>
+          </div>
+          <div className="score-hero__right">
+            <div className="score-ring" data-color="blue">
+              <div className="score-ring__value">{Math.round(iq)}</div>
+              <div className="score-ring__label">IQ</div>
+            </div>
+            <div className="muted text-sm mt-2">
+              95% CI: {ci[0]}–{ci[1]}
+            </div>
+          </div>
+        </article>
+
+        {/* --- CATEGORIES --- */}
+        {categories.length > 0 && (
+          <section className="grid-cards mt-6">
+            {categories.map(([cat, val]) => (
+              <article key={cat} className="cat-card" data-color="blue">
+                <div className="cat-card__head">
+                  <span className="pill">
+                    {t(dict, `category-${cat}-name`, cat)}
+                  </span>
+                  <strong className="cat-card__score">
+                    {val.percent.toFixed(0)}%
+                  </strong>
                 </div>
-                <p className="muted mt-3">
-                  {t(
-                    dict,
-                    "ui-result-disclaimer_iq",
-                    "This IQ estimate is calculated from your responses using a normalized z-score across five cognitive domains: reasoning, math, verbal, spatial, and memory."
-                  )}
+                <p className="muted">
+                  {t(dict, `category-${cat}-desc`, "")}
                 </p>
-              </div>
-              <div className="score-hero__right">
-                <div className="score-ring" data-color="blue">
-                  <div className="score-ring__value">{Math.round(data.result.iq)}</div>
-                  <div className="score-ring__label">IQ</div>
-                </div>
-                <div className="muted text-sm mt-2">
-                  95% CI: {data.result.ci[0]}–{data.result.ci[1]}
-                </div>
-              </div>
-            </article>
-
-            {/* --- CATEGORIES --- */}
-            <section className="grid-cards mt-6">
-              {categories.map(([cat, val]) => (
-                <article key={cat} className="cat-card" data-color="blue">
-                  <div className="cat-card__head">
-                    <span className="pill">{t(dict, `category-${cat}-name`, cat)}</span>
-                    <strong className="cat-card__score">{val.percent.toFixed(0)}%</strong>
-                  </div>
-                  <p className="muted">{t(dict, `category-${cat}-desc`, "")}</p>
-                </article>
-              ))}
-            </section>
-
-            {/* --- IQ DISTRIBUTION --- */}
-            <section className="panel mt-8 p-6">
-              <h2 className="mb-3">{t(dict, "ui-result-iq_distribution", "IQ Distribution")}</h2>
-              <IQBellChart userIQ={data.result.iq} ci={data.result.ci} />
-              <p className="muted mt-3">
-                {t(
-                  dict,
-                  "ui-result-iq_explainer_short",
-                  "Your IQ estimate (mean = 100, SD = 15) is plotted on a normal curve. Most people fall between 85 – 115. Shaded regions mark typical ranges used in research and education."
-                )}
-              </p>
-            </section>
-          </>
+              </article>
+            ))}
+          </section>
         )}
+
+        {/* --- IQ DISTRIBUTION --- */}
+        <section className="panel mt-8 p-6">
+          <h2 className="mb-3">
+            {t(dict, "ui-result-iq_distribution", "IQ Distribution")}
+          </h2>
+          <IQBellChart userIQ={iq} ci={ci} />
+          <p className="muted mt-3">
+            {t(
+              dict,
+              "ui-result-iq_explainer_short",
+              "Your IQ estimate (mean = 100, SD = 15) is plotted on a normal curve."
+            )}
+          </p>
+        </section>
       </main>
       <SiteFooter />
 
@@ -184,8 +209,10 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
     { from: 70, to: 84, label: "70–84 – Below Average", color: "#fbbf24" },
     { from: 85, to: 114, label: "85–114 – Average", color: "#22c55e" },
     { from: 115, to: 129, label: "115–129 – Above Average", color: "#3b82f6" },
-    { from: 130, to: 145, label: "130+ – Gifted", color: "#a855f7" }
+    { from: 130, to: 145, label: "130+ – Gifted", color: "#a855f7" },
   ];
+
+  if (!ci || ci.length !== 2) ci = [90, 110]; // fallback safety
 
   return (
     <div style={{ width: "100%", height: 260 }}>
@@ -216,7 +243,7 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
                 position: "insideTop",
                 fontSize: 11,
                 fill: r.color,
-                offset: 4
+                offset: 4,
               }}
             />
           ))}
@@ -224,7 +251,7 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
           <Tooltip
             formatter={(v, n, p) => [
               `Density ${(v as number).toFixed(4)}`,
-              `IQ ${p.payload.x}`
+              `IQ ${p.payload.x}`,
             ]}
           />
 
@@ -244,7 +271,7 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
               value: `You (${Math.round(userIQ)})`,
               position: "top",
               fill: "#ef4444",
-              fontWeight: 600
+              fontWeight: 600,
             }}
           />
           <ReferenceLine
