@@ -1,7 +1,8 @@
 // app/api/result/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
-import { computeIQ } from "@/lib/scoring_iq";
+import { computeResult, toIQResultDTO } from "@/lib/scoring";
+import { QUESTION_BANK } from "@/data/question_index";
 import { AnswerMap } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -14,42 +15,33 @@ export async function GET(
     const col = await getCollection("results");
     const doc = await col.findOne({ id: params.id }, { projection: { _id: 0 } });
 
+    // --- Ikke funnet ---
     if (!doc) {
       return NextResponse.json({ error: "not_found" }, { status: 404 });
     }
 
-    // ✅ Hvis resultat finnes fra før
-    if (doc.result && typeof doc.result.iq === "number") {
-      const iq = doc.result.iq;
-      const ci = Array.isArray(doc.result.ci) ? doc.result.ci : [iq - 10, iq + 10];
-      const percent = typeof doc.result.percent === "number" ? doc.result.percent : 50;
-      const perCategory = doc.result.perCategory || {};
-
+    // --- Ferdig resultat finnes allerede ---
+    if (
+      doc.result &&
+      typeof doc.result.iq === "number" &&
+      doc.result.perCategory
+    ) {
       return NextResponse.json(
         {
           id: doc.id,
-          result: { iq, ci, percent, perCategory },
+          result: doc.result,
         },
         { status: 200 }
       );
     }
 
-    // ✅ Hvis bare answers er lagret – beregn på nytt
+    // --- Beregn på nytt fra lagrede svar ---
     if (doc.answers && typeof doc.answers === "object") {
       const answers = doc.answers as AnswerMap;
-      const computed = computeIQ(answers);
+      const computed = computeResult(QUESTION_BANK, answers);
+      const result = toIQResultDTO(computed);
 
-      // fallback-sikkerhet
-      const iq = computed?.iq ?? 100;
-      const ci =
-        Array.isArray(computed?.ci) && computed.ci.length === 2
-          ? computed.ci
-          : [iq - 10, iq + 10];
-      const percent = computed?.percent ?? 50;
-      const perCategory = computed?.perCategory ?? {};
-
-      const result = { iq, ci, percent, perCategory };
-
+      // lagre oppdatert versjon
       await col.updateOne(
         { id: doc.id },
         { $set: { result, updatedAt: new Date() } }
@@ -58,9 +50,22 @@ export async function GET(
       return NextResponse.json({ id: doc.id, result }, { status: 200 });
     }
 
-    // ✅ Hvis dokumentet er ufullstendig
+    // --- Ufullstendig dokument – returner fallback ---
+    const fallback = {
+      iq: 100,
+      ci: [90, 110] as [number, number],
+      percent: 50,
+      perCategory: {
+        reasoning: { percent: 50 },
+        math: { percent: 50 },
+        verbal: { percent: 50 },
+        spatial: { percent: 50 },
+        memory: { percent: 50 },
+      },
+    };
+
     console.warn("Incomplete result document:", doc.id);
-    return NextResponse.json({ error: "incomplete_result" }, { status: 422 });
+    return NextResponse.json({ id: doc.id, result: fallback }, { status: 200 });
   } catch (err) {
     console.error("GET /api/result/[id] error", err);
     return NextResponse.json({ error: "server_error" }, { status: 500 });
