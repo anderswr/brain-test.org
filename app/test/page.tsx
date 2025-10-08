@@ -1,3 +1,4 @@
+// app/test/page.tsx
 "use client";
 
 import * as React from "react";
@@ -19,21 +20,23 @@ export default function TestPage() {
   const item = QUESTION_BANK[idx] as Question;
 
   /** Setter valgt svar (brukes for MCQ og visual) + auto-next */
-  function setChoice(choice: any) {
-    setAnswers((a) => {
-      const updated = { ...a, [item.id]: choice };
+  function setChoice(choiceIndex: number) {
+    const updated = { ...answers, [item.id]: choiceIndex };
+    setAnswers(updated);
+    console.debug(
+      `[ANSWERED] ${item.id} (${item.textKey}) → ${choiceIndex}`,
+      updated
+    );
 
-      // 🔹 Automatisk gå videre (eller send inn hvis siste spørsmål)
-      setTimeout(() => {
-        if (idx < QUESTION_BANK.length - 1) {
-          setIdx((i) => Math.min(i + 1, QUESTION_BANK.length - 1));
-        } else {
-          submit();
-        }
-      }, 250);
-
-      return updated;
-    });
+    // 🔹 Automatisk gå videre (eller send inn hvis siste spørsmål)
+    setTimeout(() => {
+      if (idx < QUESTION_BANK.length - 1) {
+        setIdx((i) => Math.min(i + 1, QUESTION_BANK.length - 1));
+      } else {
+        console.debug("[AUTO-SUBMIT]");
+        submit(updated);
+      }
+    }, 250);
   }
 
   /** Viser oversatt tekst + nøkkel for debugging */
@@ -50,18 +53,22 @@ export default function TestPage() {
   }
 
   /** Sender inn alle svarene */
-  async function submit() {
+  async function submit(payload?: Record<string, any>) {
+    const data = payload || answers;
+    console.debug("[SUBMIT] Sending answers:", data);
     try {
       setSubmitting(true);
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ answers, lang }),
+        body: JSON.stringify({ answers: data, lang }),
       });
       const json = await res.json();
+      console.debug("[SUBMIT RESPONSE]", json);
       if (!res.ok) throw new Error(json?.error || "submit_failed");
       window.location.href = `/result/${json.id}`;
     } catch (e: any) {
+      console.error("[SUBMIT ERROR]", e);
       setError(e?.message || "submit_failed");
     } finally {
       setSubmitting(false);
@@ -89,8 +96,8 @@ export default function TestPage() {
               <input
                 type="radio"
                 name={`q-${q.id}`}
-                checked={answers[q.id] === optKey}
-                onChange={() => setChoice(optKey)} // auto-next trigges her
+                checked={answers[q.id] === i}
+                onChange={() => setChoice(i)} // ✅ bruker indeks, ikke nøkkel
               />
               {renderText(dict, optKey, `Missing: ${optKey}`)}
             </label>
@@ -110,6 +117,7 @@ export default function TestPage() {
           const newOrder = exists
             ? current.filter((x: string) => x !== itemKey)
             : [...current, itemKey];
+          console.debug("[SEQUENCE]", q.id, newOrder);
           return { ...prev, [q.id]: newOrder };
         });
       };
@@ -180,6 +188,15 @@ export default function TestPage() {
     return <p>Unsupported question type</p>;
   }
 
+  React.useEffect(() => {
+    console.debug(
+      `[STATE] Showing #${idx + 1}/${QUESTION_BANK.length} →`,
+      item?.id,
+      item?.category,
+      answers
+    );
+  }, [idx, answers]);
+
   return (
     <div>
       <SiteHeader />
@@ -238,7 +255,7 @@ export default function TestPage() {
             ) : (
               <button
                 className="btn"
-                onClick={submit}
+                onClick={() => submit()}
                 disabled={
                   Object.keys(answers).length !== QUESTION_BANK.length ||
                   submitting
@@ -251,13 +268,7 @@ export default function TestPage() {
 
           {/* --- feilvisning --- */}
           {error && (
-            <p
-              style={{
-                color: "#f87171",
-                marginTop: 8,
-                fontSize: 14,
-              }}
-            >
+            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>
               {error}
             </p>
           )}
