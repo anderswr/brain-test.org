@@ -1,57 +1,48 @@
 // app/api/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
-import { computeIQ } from "@/lib/scoring_iq";
+import { computeResult } from "@/lib/scoring";
+import { toIQResultDTO } from "@/lib/scoring";
+import { QUESTION_BANK } from "@/data/question_index";
 import { AnswerMap } from "@/lib/types";
 import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
-
-// slå av caching – resultater må lagres umiddelbart
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; // disable caching
 export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
     const col = await getCollection("results");
+    const body = await req.json();
 
-    // --- Valider input ---
-    if (!body || typeof body !== "object") {
-      return NextResponse.json({ error: "invalid_body" }, { status: 400 });
-    }
-
-    const id: string = (body.id?.trim?.() || randomUUID()) as string;
+    // Bruk eksisterende ID hvis gitt, ellers ny UUID
+    const id: string = body.id?.trim() || randomUUID();
     const answers: AnswerMap = body.answers || {};
 
-    if (!answers || Object.keys(answers).length === 0) {
-      return NextResponse.json({ error: "no_answers" }, { status: 400 });
-    }
+    let result;
 
     // --- Beregn resultat ---
-    let computed = computeIQ(answers);
-    if (!computed || typeof computed.iq !== "number") {
-      console.warn("computeIQ returned invalid data for id:", id);
-      computed = {
+    if (Object.keys(answers).length > 0) {
+      const computed = computeResult(QUESTION_BANK, answers);
+      result = toIQResultDTO(computed);
+    } else {
+      // --- Tom fallback (ingen svar) ---
+      result = {
         iq: 100,
-        ci: [90, 110],
+        ci: [90, 110] as [number, number],
         percent: 50,
-        perCategory: {},
+        perCategory: {
+          reasoning: { percent: 50 },
+          math: { percent: 50 },
+          verbal: { percent: 50 },
+          spatial: { percent: 50 },
+          memory: { percent: 50 },
+        },
       };
     }
 
-    // --- Normaliser struktur ---
-    const iq = computed.iq ?? 100;
-    const ci =
-      Array.isArray(computed.ci) && computed.ci.length === 2
-        ? computed.ci
-        : [iq - 10, iq + 10];
-    const percent = computed.percent ?? 50;
-    const perCategory = computed.perCategory ?? {};
-
-    const result = { iq, ci, percent, perCategory };
-
-    // --- Lagre i DB (upsert) ---
+    // --- Lagre eller oppdatere i MongoDB ---
     await col.updateOne(
       { id },
       {
@@ -66,7 +57,6 @@ export async function POST(req: NextRequest) {
       { upsert: true }
     );
 
-    // --- Returner ferdig struktur ---
     return NextResponse.json(
       {
         ok: true,
