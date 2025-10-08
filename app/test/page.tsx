@@ -26,7 +26,7 @@ export default function TestPage() {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ answers, lang })
+        body: JSON.stringify({ answers, lang }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json?.error || "submit_failed");
@@ -38,13 +38,26 @@ export default function TestPage() {
     }
   }
 
+  /** Helper to show translation + key for debugging */
+  function renderText(dict: any, key: string, fallback = "") {
+    const text = t(dict, key, fallback);
+    return (
+      <span>
+        {text}
+        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>
+          ({key})
+        </span>
+      </span>
+    );
+  }
+
   /** Render multiple/visual/sequence question appropriately */
   function renderQuestion(q: Question) {
     // 🔹 Multiple-choice / visual
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {q.optionsKey.map((key: string, i: number) => (
+          {q.optionsKey.map((optKey: string, i: number) => (
             <label
               key={i}
               className="card"
@@ -52,17 +65,16 @@ export default function TestPage() {
                 padding: 12,
                 display: "flex",
                 gap: 8,
-                alignItems: "center"
+                alignItems: "center",
               }}
             >
               <input
                 type="radio"
                 name={`q-${q.id}`}
-                checked={answers[q.id] === key}
-                onChange={() => setChoice(key)}
+                checked={answers[q.id] === optKey}
+                onChange={() => setChoice(optKey)}
               />
-              {/* ✅ bruker flat nøkkelstruktur: q-[domain]-[nr]-[bokstav] */}
-              <span>{t(dict, `${q.textKey}-${key}`)}</span>
+              {renderText(dict, optKey, `Missing: ${optKey}`)}
             </label>
           ))}
         </div>
@@ -73,7 +85,7 @@ export default function TestPage() {
     if ("itemsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {q.itemsKey.map((key: string, i: number) => (
+          {q.itemsKey.map((itmKey: string, i: number) => (
             <div
               key={i}
               className="card"
@@ -81,10 +93,10 @@ export default function TestPage() {
                 padding: 12,
                 display: "flex",
                 gap: 8,
-                alignItems: "center"
+                alignItems: "center",
               }}
             >
-              {t(dict, `${q.textKey}-${key}`)}
+              {renderText(dict, itmKey, `Missing: ${itmKey}`)}
             </div>
           ))}
           <p className="muted text-sm">(Sequence questions are not interactive yet)</p>
@@ -106,10 +118,12 @@ export default function TestPage() {
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
-              marginBottom: 12
+              marginBottom: 12,
             }}
           >
-            <div style={{ fontWeight: 600 }}>{t(dict, item.textKey)}</div>
+            <div style={{ fontWeight: 600 }}>
+              {renderText(dict, item.textKey, `Missing: ${item.textKey}`)}
+            </div>
             <div style={{ opacity: 0.6, fontSize: 12 }}>
               {idx + 1} / {QUESTION_BANK.length}
             </div>
@@ -151,13 +165,7 @@ export default function TestPage() {
           </div>
 
           {error && (
-            <p
-              style={{
-                color: "#f87171",
-                marginTop: 8,
-                fontSize: 14
-              }}
-            >
+            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>
               {error}
             </p>
           )}
