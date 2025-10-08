@@ -1,24 +1,36 @@
 // /lib/scoring_iq.ts
 import { CATEGORY_INDEX } from "@/data/question_index";
 import { CategoryId, AnswerMap, Question, isSequence } from "@/lib/types";
-import { t } from "@/lib/i18n";
 
-/**
- * Resultatstruktur for IQ-beregning
- */
+/** Struktur frontend og API forventer */
 export interface IQResult {
-  totalScore: number;
-  maxScore: number;
+  iq: number;
+  ci: [number, number];
   percent: number;
-  byCategory: Record<CategoryId, number>;
-  iqEstimate: number;
+  perCategory: Record<CategoryId, { percent: number }>;
 }
 
 /**
- * Beregn resultat fra brukerens svar.
- * Scorer alle spørsmål basert på correctIndex eller riktig rekkefølge.
+ * Beregn IQ-resultat basert på brukerens svar.
+ * Robust mot manglende eller delvise data.
  */
 export function computeIQ(answers: AnswerMap): IQResult {
+  // fallback hvis answers mangler
+  if (!answers || Object.keys(answers).length === 0) {
+    return {
+      iq: 100,
+      ci: [90, 110],
+      percent: 50,
+      perCategory: {
+        reasoning: { percent: 50 },
+        math: { percent: 50 },
+        verbal: { percent: 50 },
+        spatial: { percent: 50 },
+        memory: { percent: 50 },
+      },
+    };
+  }
+
   let totalScore = 0;
   let maxScore = 0;
 
@@ -45,11 +57,12 @@ export function computeIQ(answers: AnswerMap): IQResult {
       const ans = answers[q.id];
       let score = 0;
 
+      // multiple-choice / visual / matrix
       if ("correctIndex" in q && typeof ans === "number") {
-        // multiple / visual / matrix
         score = ans === q.correctIndex ? 1 : 0;
-      } else if (isSequence(q) && Array.isArray(ans)) {
-        // sequence (rekkefølge)
+      }
+      // sequence / ordering
+      else if (isSequence(q) && Array.isArray(ans)) {
         const correct = q.answerSequence;
         let correctPairs = 0;
         for (let i = 0; i < ans.length; i++) {
@@ -65,27 +78,39 @@ export function computeIQ(answers: AnswerMap): IQResult {
     }
   }
 
-  // Normaliser kategoripoeng til 0–100
+  // Unngå deling på null
+  if (maxScore === 0) maxScore = 1;
+
+  // Beregn prosenter per kategori
+  const perCategory: Record<CategoryId, { percent: number }> = {
+    reasoning: { percent: 0 },
+    math: { percent: 0 },
+    verbal: { percent: 0 },
+    spatial: { percent: 0 },
+    memory: { percent: 0 },
+  };
   for (const c of Object.keys(byCategory) as CategoryId[]) {
     const total = categoryTotals[c];
-    byCategory[c] = total > 0 ? (byCategory[c] / total) * 100 : 0;
+    perCategory[c].percent = total > 0 ? (byCategory[c] / total) * 100 : 0;
   }
 
   // Samlet prosent
-  const percent = maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+  const percent = (totalScore / maxScore) * 100;
 
-  // Estimert IQ (lineær mapping: mean = 100, SD = 15)
-  const iqEstimate = Math.round(100 + ((percent - 50) / 50) * 15);
+  // Lineær mapping: mean = 100, SD = 15
+  const iq = Math.round(100 + ((percent - 50) / 50) * 15);
 
-  return { totalScore, maxScore, percent, byCategory, iqEstimate };
+  // Konfidensintervall (± standardfeil avhengig av testlengde)
+  const errorMargin = 5 + Math.max(0, 15 - Math.min(maxScore, 15)); // litt bredere CI for korte tester
+  const ci: [number, number] = [
+    Math.max(55, iq - errorMargin),
+    Math.min(145, iq + errorMargin),
+  ];
+
+  return { iq, ci, percent, perCategory };
 }
 
-/* ---------- Optional i18n-aware label helper ---------- */
-
-/**
- * Returnerer tekstlig tolkning av IQ-nivå.
- * Kan bruke i18n-dict for oversettelse.
- */
+/* ---------- Optional: i18n label helper ---------- */
 export function iqLabel(iq: number, dict?: Record<string, string>): string {
   if (!dict) {
     if (iq < 90) return "Below average";
@@ -94,8 +119,9 @@ export function iqLabel(iq: number, dict?: Record<string, string>): string {
     return "High";
   }
 
-  if (iq < 90) return t(dict, "iq-label-below", "Below average");
-  if (iq < 110) return t(dict, "iq-label-average", "Average");
-  if (iq < 130) return t(dict, "iq-label-above", "Above average");
-  return t(dict, "iq-label-high", "High");
+  // Hvis du bruker i18n, kan t(dict, key, fallback) brukes her
+  if (iq < 90) return dict["iq-label-below"] || "Below average";
+  if (iq < 110) return dict["iq-label-average"] || "Average";
+  if (iq < 130) return dict["iq-label-above"] || "Above average";
+  return dict["iq-label-high"] || "High";
 }
