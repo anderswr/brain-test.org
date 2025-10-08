@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
@@ -17,7 +18,7 @@ export default function TestPage() {
 
   const item = QUESTION_BANK[idx] as Question;
 
-  /** Setter valgt svar (brukes for MCQ og visual) */
+  /** Setter valgt svar (brukes for MCQ og visual) + auto-next */
   function setChoice(choice: any) {
     setAnswers((a) => {
       const updated = { ...a, [item.id]: choice };
@@ -82,13 +83,14 @@ export default function TestPage() {
                 display: "flex",
                 gap: 8,
                 alignItems: "center",
+                cursor: "pointer",
               }}
             >
               <input
                 type="radio"
                 name={`q-${q.id}`}
                 checked={answers[q.id] === optKey}
-                onChange={() => setChoice(optKey)} // 🔹 her trigges auto-next
+                onChange={() => setChoice(optKey)} // auto-next trigges her
               />
               {renderText(dict, optKey, `Missing: ${optKey}`)}
             </label>
@@ -200,8 +202,18 @@ export default function TestPage() {
             </div>
           </div>
 
-          {/* --- spørsmålsvisning --- */}
-          {renderQuestion(item)}
+          {/* --- spørsmålsvisning med animasjon --- */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+            >
+              {renderQuestion(item)}
+            </motion.div>
+          </AnimatePresence>
 
           {/* --- navigasjon --- */}
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
