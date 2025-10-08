@@ -1,4 +1,5 @@
 "use client";
+
 import * as React from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -16,10 +17,25 @@ export default function TestPage() {
 
   const item = QUESTION_BANK[idx] as Question;
 
+  /** Setter valgt svar (brukes for MCQ og visual) */
   function setChoice(choice: any) {
     setAnswers((a) => ({ ...a, [item.id]: choice }));
   }
 
+  /** Viser oversatt tekst + nøkkel for debugging */
+  function renderText(dict: any, key: string, fallback = "") {
+    const text = t(dict, key, fallback);
+    return (
+      <span>
+        {text}
+        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>
+          ({key})
+        </span>
+      </span>
+    );
+  }
+
+  /** Sender inn alle svarene */
   async function submit() {
     try {
       setSubmitting(true);
@@ -38,20 +54,7 @@ export default function TestPage() {
     }
   }
 
-  /** Helper to show translation + key for debugging */
-  function renderText(dict: any, key: string, fallback = "") {
-    const text = t(dict, key, fallback);
-    return (
-      <span>
-        {text}
-        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>
-          ({key})
-        </span>
-      </span>
-    );
-  }
-
-  /** Render multiple/visual/sequence question appropriately */
+  /** Renderer spørsmål avhengig av type */
   function renderQuestion(q: Question) {
     // 🔹 Multiple-choice / visual
     if ("optionsKey" in q) {
@@ -81,25 +84,79 @@ export default function TestPage() {
       );
     }
 
-    // 🔹 Sequence-type
+    // 🔹 Sequence-type (interaktiv rekkefølge)
     if ("itemsKey" in q) {
+      const selected = answers[q.id] || [];
+
+      const handleSelect = (itemKey: string) => {
+        setAnswers((prev) => {
+          const current = prev[q.id] || [];
+          const exists = current.includes(itemKey);
+          const newOrder = exists
+            ? current.filter((x: string) => x !== itemKey)
+            : [...current, itemKey];
+          return { ...prev, [q.id]: newOrder };
+        });
+      };
+
+      const allSelected = selected.length === q.itemsKey.length;
+
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {q.itemsKey.map((itmKey: string, i: number) => (
-            <div
-              key={i}
-              className="card"
-              style={{
-                padding: 12,
-                display: "flex",
-                gap: 8,
-                alignItems: "center",
-              }}
-            >
-              {renderText(dict, itmKey, `Missing: ${itmKey}`)}
-            </div>
-          ))}
-          <p className="muted text-sm">(Sequence questions are not interactive yet)</p>
+          {q.itemsKey.map((itmKey: string, i: number) => {
+            const pos = selected.indexOf(itmKey);
+            const selectedNum = pos >= 0 ? pos + 1 : null;
+            return (
+              <button
+                key={i}
+                onClick={() => handleSelect(itmKey)}
+                className="card"
+                style={{
+                  padding: 12,
+                  textAlign: "left",
+                  border:
+                    pos >= 0 ? "2px solid var(--accent)" : "1px solid #ccc",
+                  background:
+                    pos >= 0 ? "rgba(0,128,255,0.1)" : "transparent",
+                  borderRadius: 8,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer",
+                }}
+              >
+                {renderText(dict, itmKey, `Missing: ${itmKey}`)}
+                {selectedNum && (
+                  <span
+                    style={{
+                      background: "var(--accent)",
+                      color: "white",
+                      borderRadius: "50%",
+                      width: 24,
+                      height: 24,
+                      fontSize: 12,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {selectedNum}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+
+          {!allSelected && (
+            <p className="muted text-sm">
+              Tap items in correct order ({selected.length}/{q.itemsKey.length})
+            </p>
+          )}
+          {allSelected && (
+            <p className="text-sm" style={{ color: "green" }}>
+              ✅ Sequence complete
+            </p>
+          )}
         </div>
       );
     }
@@ -113,6 +170,7 @@ export default function TestPage() {
       <SiteHeader />
       <main style={{ marginTop: 16 }}>
         <div className="card">
+          {/* --- spørsmålstekst + fremdrift --- */}
           <div
             style={{
               display: "flex",
@@ -129,15 +187,17 @@ export default function TestPage() {
             </div>
           </div>
 
+          {/* --- spørsmålsvisning --- */}
           {renderQuestion(item)}
 
+          {/* --- navigasjon --- */}
           <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
             <button
               className="btn"
               onClick={() => setIdx((i) => Math.max(0, i - 1))}
               disabled={idx === 0 || submitting}
             >
-              ← {t(dict, "cta-continue", "Back")}
+              ← {t(dict, "cta-back", "Back")}
             </button>
 
             {idx < QUESTION_BANK.length - 1 ? (
@@ -164,8 +224,15 @@ export default function TestPage() {
             )}
           </div>
 
+          {/* --- feilvisning --- */}
           {error && (
-            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>
+            <p
+              style={{
+                color: "#f87171",
+                marginTop: 8,
+                fontSize: 14,
+              }}
+            >
               {error}
             </p>
           )}
