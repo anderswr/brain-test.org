@@ -26,20 +26,18 @@ export const REASONING_QUESTIONS: Question[] = [
   })),
 
   // --- Sequence (ordering logic) ---
-  ...Array.from({ length: 4 }, (_, i) => ({
-    id: `r${11 + i}`,
-    kind: "sequence" as const,
-    category: CategoryId.Reasoning,
-    textKey: `q-reasoning-${11 + i}`,
-    itemsKey: [
-      `q-reasoning-${11 + i}-i1`,
-      `q-reasoning-${11 + i}-i2`,
-      `q-reasoning-${11 + i}-i3`,
-      `q-reasoning-${11 + i}-i4`,
-    ],
-    answerSequence: [3, 1, 0, 2],
-    partialCredit: true,
-  })),
+  ...Array.from({ length: 4 }, (_, i) => {
+    const base = `q-reasoning-${11 + i}`;
+    return {
+      id: `r${11 + i}`,
+      kind: "sequence" as const,
+      category: CategoryId.Reasoning,
+      textKey: base,
+      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
+      answerSequence: [`${base}-i4`, `${base}-i2`, `${base}-i1`, `${base}-i3`],
+      partialCredit: true,
+    };
+  }),
 
   // --- Visual (PNG + MCQ) ---
   ...Array.from({ length: 4 }, (_, i) => ({
@@ -89,20 +87,18 @@ export const REASONING_QUESTIONS: Question[] = [
   })),
 
   // --- Sequence (more) ---
-  ...Array.from({ length: 2 }, (_, i) => ({
-    id: `r${25 + i}`,
-    kind: "sequence" as const,
-    category: CategoryId.Reasoning,
-    textKey: `q-reasoning-${25 + i}`,
-    itemsKey: [
-      `q-reasoning-${25 + i}-i1`,
-      `q-reasoning-${25 + i}-i2`,
-      `q-reasoning-${25 + i}-i3`,
-      `q-reasoning-${25 + i}-i4`,
-    ],
-    answerSequence: [2, 0, 3, 1],
-    partialCredit: true,
-  })),
+  ...Array.from({ length: 2 }, (_, i) => {
+    const base = `q-reasoning-${25 + i}`;
+    return {
+      id: `r${25 + i}`,
+      kind: "sequence" as const,
+      category: CategoryId.Reasoning,
+      textKey: base,
+      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
+      answerSequence: [`${base}-i3`, `${base}-i1`, `${base}-i4`, `${base}-i2`],
+      partialCredit: true,
+    };
+  }),
 
   // --- Visual (continued) ---
   ...Array.from({ length: 2 }, (_, i) => ({
@@ -152,20 +148,18 @@ export const REASONING_QUESTIONS: Question[] = [
   })),
 
   // --- Sequence (final set) ---
-  ...Array.from({ length: 2 }, (_, i) => ({
-    id: `r${35 + i}`,
-    kind: "sequence" as const,
-    category: CategoryId.Reasoning,
-    textKey: `q-reasoning-${35 + i}`,
-    itemsKey: [
-      `q-reasoning-${35 + i}-i1`,
-      `q-reasoning-${35 + i}-i2`,
-      `q-reasoning-${35 + i}-i3`,
-      `q-reasoning-${35 + i}-i4`,
-    ],
-    answerSequence: [1, 3, 0, 2],
-    partialCredit: true,
-  })),
+  ...Array.from({ length: 2 }, (_, i) => {
+    const base = `q-reasoning-${35 + i}`;
+    return {
+      id: `r${35 + i}`,
+      kind: "sequence" as const,
+      category: CategoryId.Reasoning,
+      textKey: base,
+      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
+      answerSequence: [`${base}-i2`, `${base}-i4`, `${base}-i1`, `${base}-i3`],
+      partialCredit: true,
+    };
+  }),
 
   // --- Visual + Matrix wrap-up ---
   {
