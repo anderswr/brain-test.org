@@ -19,8 +19,13 @@ export default function ResultIndex() {
         <section className="panel head p-6">
           <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
           <p className="muted">
-            {t(dict, "ui-result-lookup_hint", "Paste your test ID to open your IQ report.")}
+            {t(
+              dict,
+              "ui-result-lookup_hint",
+              "Paste your test ID to open your IQ report."
+            )}
           </p>
+
           <div className="row" style={{ gap: 8, marginTop: 12 }}>
             <input
               className="btn"

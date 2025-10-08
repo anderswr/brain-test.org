@@ -18,14 +18,11 @@ import { t } from "@/lib/i18n";
 
 /* ---------- Utility helpers ---------- */
 
-// Clamp number to 0–1
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
-
-// Mean of numeric array
 const mean = (xs: number[]) =>
   xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : 0;
 
-// Simple IQ mapping: linear from performance (0–1) to 85–145 range
+// Map performance (0–1) → IQ 85–145
 const mapPercentToIQ = (p: number) => Math.round(85 + p * 60);
 
 /* ---------- Scoring of individual kinds ---------- */
@@ -43,7 +40,7 @@ function scoreSequence(
   if (!q.partialCredit) {
     return JSON.stringify(ans) === JSON.stringify(corr) ? 1 : 0;
   }
-  // partial: fraction of pairs in correct relative order
+  // Partial: fraction of pairs in correct relative order
   let correctPairs = 0;
   let totalPairs = 0;
   for (let i = 0; i < corr.length; i++) {
@@ -83,7 +80,6 @@ function scoreRecall(
     return clamp01(overlap / exp.length);
   }
 
-  // order matters or simple positional match
   let correct = 0;
   for (let i = 0; i < exp.length && i < got.length; i++) {
     if (exp[i] === got[i]) correct++;
@@ -116,7 +112,6 @@ export function computeResult(
     });
   }
 
-  /* Aggregate by category */
   const byCat: Record<CategoryId, number[]> = {
     reasoning: [],
     math: [],
@@ -162,7 +157,6 @@ export function computeResult(
 
 /* ---------- Convenience utilities ---------- */
 
-// Compute mean by category if you only have partial answers
 export function computeCategoryMean(
   category: CategoryId,
   perQuestion: PerQuestionScore[]
@@ -171,11 +165,8 @@ export function computeCategoryMean(
   return mean(subset.map((p) => p.score01)) * 100;
 }
 
-/* ---------- IQ label helper (i18n aware) ---------- */
+/* ---------- IQ label helper ---------- */
 
-/**
- * Returns qualitative IQ label (translated if dict provided)
- */
 export function iqLabel(iq: number, dict?: Record<string, string>): string {
   if (!dict) {
     if (iq < 90) return "Below average";
@@ -188,4 +179,24 @@ export function iqLabel(iq: number, dict?: Record<string, string>): string {
   if (iq < 110) return t(dict, "iq-label-average", "Average");
   if (iq < 130) return t(dict, "iq-label-above", "Above average");
   return t(dict, "iq-label-high", "High");
+}
+
+/* ---------- DTO helper for API results ---------- */
+
+export function toIQResultDTO(computed: ComputedResult) {
+  return {
+    iq: computed.iqEstimate,
+    ci: [
+      Math.max(55, computed.iqEstimate - 10),
+      Math.min(145, computed.iqEstimate + 10),
+    ] as [number, number],
+    percent: computed.totalPercent,
+    perCategory: {
+      reasoning: { percent: computed.categoryScores.reasoning },
+      math: { percent: computed.categoryScores.math },
+      verbal: { percent: computed.categoryScores.verbal },
+      spatial: { percent: computed.categoryScores.spatial },
+      memory: { percent: computed.categoryScores.memory },
+    },
+  };
 }
