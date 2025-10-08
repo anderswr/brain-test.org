@@ -13,17 +13,45 @@ export const revalidate = 0;
 
 export async function POST(req: NextRequest) {
   try {
-    const col = await getCollection("results");
     const body = await req.json();
+    const col = await getCollection("results");
 
-    // hent eksisterende ID hvis brukeren gjenbruker den, ellers generer ny
-    const id: string = body.id?.trim() || randomUUID();
+    // --- Valider input ---
+    if (!body || typeof body !== "object") {
+      return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+    }
+
+    const id: string = (body.id?.trim?.() || randomUUID()) as string;
     const answers: AnswerMap = body.answers || {};
 
-    // beregn resultatet
-    const result = computeIQ(answers);
+    if (!answers || Object.keys(answers).length === 0) {
+      return NextResponse.json({ error: "no_answers" }, { status: 400 });
+    }
 
-    // lagre (eller oppdater) i MongoDB
+    // --- Beregn resultat ---
+    let computed = computeIQ(answers);
+    if (!computed || typeof computed.iq !== "number") {
+      console.warn("computeIQ returned invalid data for id:", id);
+      computed = {
+        iq: 100,
+        ci: [90, 110],
+        percent: 50,
+        perCategory: {},
+      };
+    }
+
+    // --- Normaliser struktur ---
+    const iq = computed.iq ?? 100;
+    const ci =
+      Array.isArray(computed.ci) && computed.ci.length === 2
+        ? computed.ci
+        : [iq - 10, iq + 10];
+    const percent = computed.percent ?? 50;
+    const perCategory = computed.perCategory ?? {};
+
+    const result = { iq, ci, percent, perCategory };
+
+    // --- Lagre i DB (upsert) ---
     await col.updateOne(
       { id },
       {
@@ -38,6 +66,7 @@ export async function POST(req: NextRequest) {
       { upsert: true }
     );
 
+    // --- Returner ferdig struktur ---
     return NextResponse.json(
       {
         ok: true,
