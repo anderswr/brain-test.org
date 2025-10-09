@@ -2,7 +2,7 @@ import { CategoryId, Question } from "@/lib/types";
 
 /**
  * VERBAL QUESTIONS (40 total)
- * Flat key format: q-verbal-XX[-a|b|c|d] and q-verbal-XX-i1... for sequences.
+ * Flat key format: q-verbal-XX[-a|b|c|d] and q-verbal-XX-i1... for sequences..
  */
 
 export const VERBAL_QUESTIONS: Question[] = [
