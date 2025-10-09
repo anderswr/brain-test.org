@@ -39,7 +39,7 @@ export const VERBAL_QUESTIONS: Question[] = [
         `q-verbal-${n}-i3`,
         `q-verbal-${n}-i4`,
       ],
-      answerSequence: [2, 0, 3, 1], // ✅ numeric indices
+      answerSequence: [2, 0, 3, 1],
       partialCredit: true,
     };
   }),
@@ -72,7 +72,7 @@ export const VERBAL_QUESTIONS: Question[] = [
       textKey: `q-verbal-${n}`,
     };
 
-    // hver 5. blir sequence-type
+    // hvert 5. spørsmål blir sequence-type
     if (i % 5 === 0) {
       return {
         ...base,
@@ -101,6 +101,24 @@ export const VERBAL_QUESTIONS: Question[] = [
       correctIndex: (i * 3) % 4,
     };
   }),
+
+  // --- Manual fix: q-verbal-26 is SEQUENCE with 5 items ---
+  {
+    id: "v26",
+    kind: "sequence",
+    category: CategoryId.Verbal,
+    textKey: "q-verbal-26",
+    itemsKey: [
+      "q-verbal-26-i1",
+      "q-verbal-26-i2",
+      "q-verbal-26-i3",
+      "q-verbal-26-i4",
+      "q-verbal-26-i5",
+    ],
+    // Correct order: "where / are / you / going / ?"
+    answerSequence: [3, 2, 0, 1, 4],
+    partialCredit: true,
+  },
 
   // --- Final batch (31–40) ---
   ...Array.from({ length: 10 }, (_, i) => {
