@@ -1,24 +1,26 @@
- // /data/memory.ts
+// /data/memory.ts
 import { CategoryId, Question } from "@/lib/types";
 
 /**
  * MEMORY MODULE (40 questions total)
+ * Unified ID format: q-memory-XX
  * Flat key format for i18n: q-memory-01, q-memory-01-a, q-memory-01-i1, etc.
  */
 
-// --- Base multiple-choice (1–14) ---
+// --- Base multiple-choice (01–14) ---
 const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
+  const id = `q-memory-${n}`;
   return {
-    id: `mem${i + 1}`,
+    id,
     kind: "multiple" as const,
     category: CategoryId.Memory,
-    textKey: `q-memory-${n}`,
+    textKey: id,
     optionsKey: [
-      `q-memory-${n}-a`,
-      `q-memory-${n}-b`,
-      `q-memory-${n}-c`,
-      `q-memory-${n}-d`,
+      `${id}-a`,
+      `${id}-b`,
+      `${id}-c`,
+      `${id}-d`,
     ],
     correctIndex: (i + 1) % 4,
   };
@@ -27,17 +29,18 @@ const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
 // --- Visual recall (15–23) ---
 const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
   const n = String(15 + i).padStart(2, "0");
+  const id = `q-memory-${n}`;
   return {
-    id: `mem${15 + i}`,
+    id,
     kind: "visual" as const,
     category: CategoryId.Memory,
-    textKey: `q-memory-${n}`,
+    textKey: id,
     image: `/assets/img/q/memory/mem_${n}.png`,
     optionsKey: [
-      `q-memory-${n}-a`,
-      `q-memory-${n}-b`,
-      `q-memory-${n}-c`,
-      `q-memory-${n}-d`,
+      `${id}-a`,
+      `${id}-b`,
+      `${id}-c`,
+      `${id}-d`,
     ],
     correctIndex: (i + 1) % 4,
   };
@@ -46,16 +49,17 @@ const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
 // --- Additional multiple choice (24–32) ---
 const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => {
   const n = String(24 + i).padStart(2, "0");
+  const id = `q-memory-${n}`;
   return {
-    id: `mem${24 + i}`,
+    id,
     kind: "multiple" as const,
     category: CategoryId.Memory,
-    textKey: `q-memory-${n}`,
+    textKey: id,
     optionsKey: [
-      `q-memory-${n}-a`,
-      `q-memory-${n}-b`,
-      `q-memory-${n}-c`,
-      `q-memory-${n}-d`,
+      `${id}-a`,
+      `${id}-b`,
+      `${id}-c`,
+      `${id}-d`,
     ],
     correctIndex: (i + 2) % 4,
   };
@@ -63,9 +67,9 @@ const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => {
 
 // --- Sequence recall (33–40) ---
 const seqQs: Question[] = [
-  // ✅ q-memory-33 er multiple choice
+  // ✅ q-memory-33 is multiple-choice
   {
-    id: "mem33",
+    id: "q-memory-33",
     kind: "multiple",
     category: CategoryId.Memory,
     textKey: "q-memory-33",
@@ -78,17 +82,17 @@ const seqQs: Question[] = [
     correctIndex: 0, // Cat
   },
 
-  // ✅ 34–40 er sequence-type
+  // ✅ 34–40 are sequence-type
   ...Array.from({ length: 7 }, (_, i) => {
     const n = String(34 + i).padStart(2, "0");
-    const base = `q-memory-${n}`;
+    const id = `q-memory-${n}`;
     return {
-      id: `mem${34 + i}`,
+      id,
       kind: "sequence" as const,
       category: CategoryId.Memory,
-      textKey: base,
-      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
-      answerSequence: [0, 1, 2, 3], // ✅ indeksbasert
+      textKey: id,
+      itemsKey: [`${id}-i1`, `${id}-i2`, `${id}-i3`, `${id}-i4`],
+      answerSequence: [0, 1, 2, 3], // index-based, not strings
       partialCredit: true,
     };
   }),
