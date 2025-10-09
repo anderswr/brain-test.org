@@ -52,32 +52,44 @@ export const VERBAL_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Extended mix (17–30, med sekvenser hver 5. + unntak for 26) ---
+  // --- Extended mix (17–30, med sekvenser hver 5. + unntak for 22 og 26) ---
   ...Array.from({ length: 14 }, (_, i) => {
     const n = String(17 + i).padStart(2, "0");
     const id = `q-verbal-${n}`;
 
-    // unntak: 26 er spesialsekvens med 5 deler
-    if (n === "26") {
+    // unntak: 22 og 26 skal være multiple choice
+    if (n === "22" || n === "26") {
+      if (n === "26") {
+        // 26: spesialsekvens med 5 elementer
+        return {
+          id,
+          kind: "sequence" as const,
+          category: CategoryId.Verbal,
+          textKey: id,
+          itemsKey: [
+            `${id}-i1`,
+            `${id}-i2`,
+            `${id}-i3`,
+            `${id}-i4`,
+            `${id}-i5`,
+          ],
+          // Correct order: "where / are / you / going / ?"
+          answerSequence: [3, 2, 0, 1, 4],
+          partialCredit: true,
+        };
+      }
+      // 22: multiple choice (antonym)
       return {
         id,
-        kind: "sequence" as const,
+        kind: "multiple" as const,
         category: CategoryId.Verbal,
         textKey: id,
-        itemsKey: [
-          `${id}-i1`,
-          `${id}-i2`,
-          `${id}-i3`,
-          `${id}-i4`,
-          `${id}-i5`,
-        ],
-        // Correct order: "where / are / you / going / ?"
-        answerSequence: [3, 2, 0, 1, 4],
-        partialCredit: true,
+        optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
+        correctIndex: 2,
       };
     }
 
-    // hvert 5. spørsmål ellers blir sequence-type
+    // hver 5. blir ellers sequence-type (17, 27)
     if (i % 5 === 0) {
       return {
         id,
