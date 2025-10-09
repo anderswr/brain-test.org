@@ -153,23 +153,22 @@ const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => ({
 }));
 
 // --- Sequence recall (33–40) ---
-const seqQs: Question[] = Array.from({ length: 8 }, (_, i) => ({
-  id: `mem${33 + i}`,
-  kind: "sequence" as const,
-  category: CategoryId.Memory,
-  textKey: `q-memory-${33 + i}`,
-  itemsKey: [
-    `q-memory-${33 + i}-i1`,
-    `q-memory-${33 + i}-i2`,
-    `q-memory-${33 + i}-i3`,
-    `q-memory-${33 + i}-i4`,
-  ],
-  answerSequence: [0, 1, 2, 3],
-}));
+const seqQs: Question[] = Array.from({ length: 8 }, (_, i) => {
+  const base = `q-memory-${33 + i}`;
+  return {
+    id: `mem${33 + i}`,
+    kind: "sequence" as const,
+    category: CategoryId.Memory,
+    textKey: base,
+    itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
+    answerSequence: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
+    partialCredit: true,
+  };
+});
 
 export const MEMORY_QUESTIONS: Question[] = [...baseQs, ...visualQs, ...multiQs, ...seqQs];
 
-// --- Answer key ---
+// --- Answer key (for quick lookup, only used for MCQ-like types) ---
 export const ANSWER_KEY_MEMORY: Record<string, number> = Object.fromEntries(
   MEMORY_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
 );
