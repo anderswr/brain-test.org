@@ -1,4 +1,3 @@
-// /data/verbal.ts
 import { CategoryId, Question } from "@/lib/types";
 
 /**
@@ -8,23 +7,27 @@ import { CategoryId, Question } from "@/lib/types";
 
 export const VERBAL_QUESTIONS: Question[] = [
   // --- Core multiple-choice (1–10) ---
-  ...Array.from({ length: 10 }, (_, i) => ({
-    id: `v${i + 1}`,
-    kind: "multiple" as const,
-    category: CategoryId.Verbal,
-    textKey: `q-verbal-${i + 1}`,
-    optionsKey: [
-      `q-verbal-${i + 1}-a`,
-      `q-verbal-${i + 1}-b`,
-      `q-verbal-${i + 1}-c`,
-      `q-verbal-${i + 1}-d`,
-    ],
-    correctIndex: (i + 1) % 4,
-  })),
+  ...Array.from({ length: 10 }, (_, i) => {
+    const n = String(i + 1).padStart(2, "0");
+    return {
+      id: `v${i + 1}`,
+      kind: "multiple" as const,
+      category: CategoryId.Verbal,
+      textKey: `q-verbal-${n}`,
+      optionsKey: [
+        `q-verbal-${n}-a`,
+        `q-verbal-${n}-b`,
+        `q-verbal-${n}-c`,
+        `q-verbal-${n}-d`,
+      ],
+      correctIndex: (i + 1) % 4,
+    };
+  }),
 
   // --- Sequence questions (11–12) ---
   ...Array.from({ length: 2 }, (_, i) => {
-    const base = `q-verbal-${11 + i}`;
+    const n = String(11 + i).padStart(2, "0");
+    const base = `q-verbal-${n}`;
     return {
       id: `v${11 + i}`,
       kind: "sequence" as const,
@@ -37,24 +40,28 @@ export const VERBAL_QUESTIONS: Question[] = [
   }),
 
   // --- Visual (13–16) ---
-  ...Array.from({ length: 4 }, (_, i) => ({
-    id: `v${13 + i}`,
-    kind: "visual" as const,
-    category: CategoryId.Verbal,
-    textKey: `q-verbal-${13 + i}`,
-    image: `/assets/img/q/verbal/v${13 + i}.png`,
-    optionsKey: [
-      `q-verbal-${13 + i}-a`,
-      `q-verbal-${13 + i}-b`,
-      `q-verbal-${13 + i}-c`,
-      `q-verbal-${13 + i}-d`,
-    ],
-    correctIndex: (i + 2) % 4,
-  })),
+  ...Array.from({ length: 4 }, (_, i) => {
+    const n = String(13 + i).padStart(2, "0");
+    return {
+      id: `v${13 + i}`,
+      kind: "visual" as const,
+      category: CategoryId.Verbal,
+      textKey: `q-verbal-${n}`,
+      image: `/assets/img/q/verbal/v${n}.png`,
+      optionsKey: [
+        `q-verbal-${n}-a`,
+        `q-verbal-${n}-b`,
+        `q-verbal-${n}-c`,
+        `q-verbal-${n}-d`,
+      ],
+      correctIndex: (i + 2) % 4,
+    };
+  }),
 
   // --- Extended mix (17–30) ---
   ...Array.from({ length: 14 }, (_, i) => {
-    const baseKey = `q-verbal-${17 + i}`;
+    const n = String(17 + i).padStart(2, "0");
+    const baseKey = `q-verbal-${n}`;
     const base = {
       id: `v${17 + i}`,
       category: CategoryId.Verbal,
@@ -88,7 +95,8 @@ export const VERBAL_QUESTIONS: Question[] = [
 
   // --- Final batch (31–40) ---
   ...Array.from({ length: 10 }, (_, i) => {
-    const baseKey = `q-verbal-${31 + i}`;
+    const n = String(31 + i).padStart(2, "0");
+    const baseKey = `q-verbal-${n}`;
     const base = {
       id: `v${31 + i}`,
       category: CategoryId.Verbal,
@@ -111,7 +119,7 @@ export const VERBAL_QUESTIONS: Question[] = [
       return {
         ...base,
         kind: "visual" as const,
-        image: `/assets/img/q/verbal/v${31 + i}.png`,
+        image: `/assets/img/q/verbal/v${n}.png`,
         optionsKey: [
           `${baseKey}-a`,
           `${baseKey}-b`,
