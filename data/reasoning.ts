@@ -1,15 +1,16 @@
+// /data/reasoning.ts
 import { CategoryId, Question } from "@/lib/types";
 
 /**
- * Reasoning questions — flat i18n keys
- * Example:
+ * REASONING QUESTIONS (40 items total)
+ * Flat i18n keys:
  *   "q-reasoning-01"       → question text
  *   "q-reasoning-01-a" ... → multiple choice options
  *   "q-reasoning-11-i1" .. → sequence items
  */
 
 export const REASONING_QUESTIONS: Question[] = [
-  // --- Multiple-choice (text-based) ---
+  // --- Multiple-choice (1–10) ---
   ...Array.from({ length: 10 }, (_, i) => {
     const n = String(i + 1).padStart(2, "0");
     return {
@@ -27,22 +28,26 @@ export const REASONING_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Sequence (ordering logic) ---
+  // --- Sequence (11–14) ---
   ...Array.from({ length: 4 }, (_, i) => {
     const n = String(11 + i).padStart(2, "0");
-    const base = `q-reasoning-${n}`;
     return {
       id: `r${11 + i}`,
       kind: "sequence" as const,
       category: CategoryId.Reasoning,
-      textKey: base,
-      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
-      answerSequence: [`${base}-i4`, `${base}-i2`, `${base}-i1`, `${base}-i3`],
+      textKey: `q-reasoning-${n}`,
+      itemsKey: [
+        `q-reasoning-${n}-i1`,
+        `q-reasoning-${n}-i2`,
+        `q-reasoning-${n}-i3`,
+        `q-reasoning-${n}-i4`,
+      ],
+      answerSequence: [3, 1, 0, 2], // ✅ numeric indices
       partialCredit: true,
     };
   }),
 
-  // --- Visual (PNG + MCQ) ---
+  // --- Visual (15–18) ---
   ...Array.from({ length: 4 }, (_, i) => {
     const n = String(15 + i).padStart(2, "0");
     return {
@@ -61,7 +66,7 @@ export const REASONING_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Matrix (PNG + MCQ) ---
+  // --- Matrix (19–20) ---
   ...Array.from({ length: 2 }, (_, i) => {
     const n = String(19 + i).padStart(2, "0");
     return {
@@ -80,7 +85,7 @@ export const REASONING_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Multiple (text) continued ---
+  // --- Multiple continued (21–24) ---
   ...Array.from({ length: 4 }, (_, i) => {
     const n = String(21 + i).padStart(2, "0");
     return {
@@ -98,22 +103,26 @@ export const REASONING_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Sequence (more) ---
+  // --- Sequence (25–26) ---
   ...Array.from({ length: 2 }, (_, i) => {
     const n = String(25 + i).padStart(2, "0");
-    const base = `q-reasoning-${n}`;
     return {
       id: `r${25 + i}`,
       kind: "sequence" as const,
       category: CategoryId.Reasoning,
-      textKey: base,
-      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
-      answerSequence: [`${base}-i3`, `${base}-i1`, `${base}-i4`, `${base}-i2`],
+      textKey: `q-reasoning-${n}`,
+      itemsKey: [
+        `q-reasoning-${n}-i1`,
+        `q-reasoning-${n}-i2`,
+        `q-reasoning-${n}-i3`,
+        `q-reasoning-${n}-i4`,
+      ],
+      answerSequence: [2, 0, 3, 1],
       partialCredit: true,
     };
   }),
 
-  // --- Visual (continued) ---
+  // --- Visual (27–28) ---
   ...Array.from({ length: 2 }, (_, i) => {
     const n = String(27 + i).padStart(2, "0");
     return {
@@ -132,7 +141,7 @@ export const REASONING_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Matrix (continued) ---
+  // --- Matrix (29–30) ---
   ...Array.from({ length: 2 }, (_, i) => {
     const n = String(29 + i).padStart(2, "0");
     return {
@@ -151,7 +160,7 @@ export const REASONING_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Final multiple batch ---
+  // --- Multiple (31–34) ---
   ...Array.from({ length: 4 }, (_, i) => {
     const n = String(31 + i).padStart(2, "0");
     return {
@@ -169,22 +178,26 @@ export const REASONING_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Sequence (final set) ---
+  // --- Sequence (35–36) ---
   ...Array.from({ length: 2 }, (_, i) => {
     const n = String(35 + i).padStart(2, "0");
-    const base = `q-reasoning-${n}`;
     return {
       id: `r${35 + i}`,
       kind: "sequence" as const,
       category: CategoryId.Reasoning,
-      textKey: base,
-      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
-      answerSequence: [`${base}-i2`, `${base}-i4`, `${base}-i1`, `${base}-i3`],
+      textKey: `q-reasoning-${n}`,
+      itemsKey: [
+        `q-reasoning-${n}-i1`,
+        `q-reasoning-${n}-i2`,
+        `q-reasoning-${n}-i3`,
+        `q-reasoning-${n}-i4`,
+      ],
+      answerSequence: [1, 3, 0, 2],
       partialCredit: true,
     };
   }),
 
-  // --- Visual + Matrix wrap-up ---
+  // --- Visual & Matrix wrap-up (37–38) ---
   {
     id: "r37",
     kind: "visual",
@@ -213,6 +226,8 @@ export const REASONING_QUESTIONS: Question[] = [
     ],
     correctIndex: 0,
   },
+
+  // --- Final multiple (39–40) ---
   {
     id: "r39",
     kind: "multiple",
@@ -240,3 +255,8 @@ export const REASONING_QUESTIONS: Question[] = [
     correctIndex: 1,
   },
 ];
+
+// --- Answer key ---
+export const ANSWER_KEY_REASONING: Record<string, number> = Object.fromEntries(
+  REASONING_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
+);
