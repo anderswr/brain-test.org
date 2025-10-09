@@ -23,7 +23,7 @@ export const MATH_QUESTIONS: Question[] = [
         `q-math-${n}-c`,
         `q-math-${n}-d`,
       ],
-      correctIndex: [2, 3, 1, 2, 1, 0, 1, 2, 0, 3][i] ?? 0,
+      correctIndex: (i + 2) % 4,
     };
   }),
 
@@ -33,13 +33,8 @@ export const MATH_QUESTIONS: Question[] = [
     kind: "sequence",
     category: CategoryId.Math,
     textKey: "q-math-11",
-    itemsKey: [
-      "q-math-11-i1",
-      "q-math-11-i2",
-      "q-math-11-i3",
-      "q-math-11-i4",
-    ],
-    answerSequence: [3, 2, 1, 0], // ✅ indekser
+    itemsKey: ["q-math-11-i1", "q-math-11-i2", "q-math-11-i3", "q-math-11-i4"],
+    answerSequence: [3, 2, 1, 0], // ✅ numeric indices, not strings
     partialCredit: true,
   },
   {
@@ -47,13 +42,8 @@ export const MATH_QUESTIONS: Question[] = [
     kind: "sequence",
     category: CategoryId.Math,
     textKey: "q-math-12",
-    itemsKey: [
-      "q-math-12-i1",
-      "q-math-12-i2",
-      "q-math-12-i3",
-      "q-math-12-i4",
-    ],
-    answerSequence: [1, 2, 0, 3], // ✅ indekser
+    itemsKey: ["q-math-12-i1", "q-math-12-i2", "q-math-12-i3", "q-math-12-i4"],
+    answerSequence: [1, 2, 0, 3], // ✅ numeric indices
     partialCredit: true,
   },
 
@@ -87,7 +77,7 @@ export const MATH_QUESTIONS: Question[] = [
     correctIndex: 1,
   },
 
-  // --- Worded math problems and remaining ---
+  // --- Worded math problems and remaining (15–40) ---
   ...Array.from({ length: 26 }, (_, i) => {
     const n = String(15 + i).padStart(2, "0");
     return {
