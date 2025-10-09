@@ -1,4 +1,4 @@
-// /data/memory.ts
+ // /data/memory.ts
 import { CategoryId, Question } from "@/lib/types";
 
 /**
@@ -62,19 +62,37 @@ const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => {
 });
 
 // --- Sequence recall (33–40) ---
-const seqQs: Question[] = Array.from({ length: 8 }, (_, i) => {
-  const n = String(33 + i).padStart(2, "0");
-  const base = `q-memory-${n}`;
-  return {
-    id: `mem${33 + i}`,
-    kind: "sequence" as const,
+const seqQs: Question[] = [
+  // ✅ q-memory-33 er multiple choice
+  {
+    id: "mem33",
+    kind: "multiple",
     category: CategoryId.Memory,
-    textKey: base,
-    itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
-    answerSequence: [0, 1, 2, 3], // ✅ indeksbasert, ikke tekstbasert
-    partialCredit: true,
-  };
-});
+    textKey: "q-memory-33",
+    optionsKey: [
+      "q-memory-33-a",
+      "q-memory-33-b",
+      "q-memory-33-c",
+      "q-memory-33-d",
+    ],
+    correctIndex: 0, // Cat
+  },
+
+  // ✅ 34–40 er sequence-type
+  ...Array.from({ length: 7 }, (_, i) => {
+    const n = String(34 + i).padStart(2, "0");
+    const base = `q-memory-${n}`;
+    return {
+      id: `mem${34 + i}`,
+      kind: "sequence" as const,
+      category: CategoryId.Memory,
+      textKey: base,
+      itemsKey: [`${base}-i1`, `${base}-i2`, `${base}-i3`, `${base}-i4`],
+      answerSequence: [0, 1, 2, 3], // ✅ indeksbasert
+      partialCredit: true,
+    };
+  }),
+];
 
 // --- Export all combined ---
 export const MEMORY_QUESTIONS: Question[] = [...baseQs, ...visualQs, ...multiQs, ...seqQs];
