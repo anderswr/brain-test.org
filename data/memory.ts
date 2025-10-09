@@ -1,4 +1,3 @@
-// /data/memory.ts
 import { CategoryId, Question } from "@/lib/types";
 
 /**
@@ -66,22 +65,38 @@ const seqQs: Question[] = [
     correctIndex: 0, // Cat
   },
 
-  // 34–35 → sequence
-  ...Array.from({ length: 2 }, (_, i) => {
-    const n = String(34 + i).padStart(2, "0");
-    const id = `q-memory-${n}`;
-    return {
-      id,
-      kind: "sequence" as const,
-      category: CategoryId.Memory,
-      textKey: id,
-      itemsKey: [`${id}-i1`, `${id}-i2`, `${id}-i3`, `${id}-i4`],
-      answerSequence: [0, 1, 2, 3],
-      partialCredit: true,
-    };
-  }),
+  // 34 → multiple (ikke sequence)
+  {
+    id: "q-memory-34",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q-memory-34",
+    optionsKey: [
+      "q-memory-34-a",
+      "q-memory-34-b",
+      "q-memory-34-c",
+      "q-memory-34-d",
+    ],
+    correctIndex: 2,
+  },
 
-  // 36 → multiple (fix)
+  // 35 → sequence
+  {
+    id: "q-memory-35",
+    kind: "sequence" as const,
+    category: CategoryId.Memory,
+    textKey: "q-memory-35",
+    itemsKey: [
+      "q-memory-35-i1",
+      "q-memory-35-i2",
+      "q-memory-35-i3",
+      "q-memory-35-i4",
+    ],
+    answerSequence: [0, 1, 2, 3],
+    partialCredit: true,
+  },
+
+  // 36 → multiple
   {
     id: "q-memory-36",
     kind: "multiple",
@@ -120,7 +135,7 @@ export const MEMORY_QUESTIONS: Question[] = [
   ...seqQs,
 ];
 
-// --- Answer key (for multiple choice only) ---
+// --- Answer key ---
 export const ANSWER_KEY_MEMORY: Record<string, number> = Object.fromEntries(
   MEMORY_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
 );
