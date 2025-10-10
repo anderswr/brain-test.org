@@ -3,7 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
-import { IQResult } from "@/lib/scoring_iq";
+import { ComputedResult } from "@/lib/scoring_iq";
 import {
   LineChart,
   Line,
@@ -16,12 +16,12 @@ import {
 } from "recharts";
 
 interface ReportIQProps {
-  result: IQResult;
+  result: ComputedResult;
 }
 
 function generateNormalData(mean = 100, sd = 15) {
   const data = [];
-  for (let x = 55; x <= 145; x += 1) {
+  for (let x = 55; x <= 145; x++) {
     const y =
       (1 / (sd * Math.sqrt(2 * Math.PI))) *
       Math.exp(-0.5 * Math.pow((x - mean) / sd, 2));
@@ -31,25 +31,13 @@ function generateNormalData(mean = 100, sd = 15) {
 }
 
 export default function ReportIQ({ result }: ReportIQProps) {
-  // 🔹 Støtt både gamle og nye feltnavn
-  const iq =
-    (result as any).iqEstimate ??
-    (result as any).iq ??
-    100;
+  const iq = result.iqEstimate;
+  const ci: [number, number] = [
+    Math.max(55, iq - 10),
+    Math.min(145, iq + 10),
+  ];
 
-  const byCategory =
-    (result as any).byCategory ??
-    Object.fromEntries(
-      Object.entries((result as any).perCategory || {}).map(([k, v]) => [
-        k,
-        (v as any).percent,
-      ])
-    );
-
-  const ci: [number, number] =
-    (result as any).ci ??
-    [Math.max(55, iq - 10), Math.min(145, iq + 10)];
-
+  const byCategory = result.categoryScores;
   const data = generateNormalData();
 
   const iqColor =
@@ -104,12 +92,7 @@ export default function ReportIQ({ result }: ReportIQProps) {
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data}>
-                <XAxis
-                  dataKey="x"
-                  type="number"
-                  domain={[55, 145]}
-                  tickCount={10}
-                />
+                <XAxis dataKey="x" type="number" domain={[55, 145]} tickCount={10} />
                 <YAxis hide domain={[0, "auto"]} />
                 <Tooltip
                   formatter={(val: number) =>
@@ -124,14 +107,7 @@ export default function ReportIQ({ result }: ReportIQProps) {
                   strokeWidth={2}
                   dot={false}
                 />
-                {/* Confidence interval shading */}
-                <ReferenceArea
-                  x1={ci[0]}
-                  x2={ci[1]}
-                  fill="#60a5fa"
-                  fillOpacity={0.15}
-                />
-                {/* User's IQ line */}
+                <ReferenceArea x1={ci[0]} x2={ci[1]} fill="#60a5fa" fillOpacity={0.15} />
                 <ReferenceLine
                   x={iq}
                   stroke="#1e40af"
@@ -155,16 +131,13 @@ export default function ReportIQ({ result }: ReportIQProps) {
       {/* Category performance */}
       <div className="grid md:grid-cols-2 gap-4">
         {Object.entries(byCategory).map(([cat, percent]) => (
-          <Card
-            key={cat}
-            className="rounded-2xl shadow-sm border border-gray-200"
-          >
+          <Card key={cat} className="rounded-2xl shadow-sm border border-gray-200">
             <CardContent className="p-4">
               <div className="flex justify-between mb-2">
                 <span className="font-semibold capitalize">{cat}</span>
-                <span>{Number(percent).toFixed(0)}%</span>
+                <span>{percent.toFixed(0)}%</span>
               </div>
-              <Progress value={Number(percent)} />
+              <Progress value={percent} />
             </CardContent>
           </Card>
         ))}
