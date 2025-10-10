@@ -50,32 +50,14 @@ export const VERBAL_QUESTIONS: Question[] = [
     };
   }),
 
-  // --- Extended mix (17–30, med sekvenser hver 5. + unntak for 22, 26 og 27) ---
+  // --- Extended mix (17–30, med sekvenser hver 5. + unntak for 17, 22, 25, 26, 27) ---
   ...Array.from({ length: 14 }, (_, i) => {
     const n = String(17 + i).padStart(2, "0");
     const id = `q-verbal-${n}`;
 
-    // unntak: 22, 26, 27 skal være multiple choice
-    if (["22", "26", "27"].includes(n)) {
-      if (n === "26") {
-        // 26 er sekvens
-        return {
-          id,
-          kind: "sequence" as const,
-          category: CategoryId.Verbal,
-          textKey: id,
-          itemsKey: [
-            `${id}-i1`,
-            `${id}-i2`,
-            `${id}-i3`,
-            `${id}-i4`,
-            `${id}-i5`,
-          ],
-          answerSequence: [3, 2, 0, 1, 4],
-          partialCredit: true,
-        };
-      }
-      // 22 og 27 → multiple
+    // === Unntak ===
+    if (["17", "22", "27"].includes(n)) {
+      // multiple-choice unntak
       return {
         id,
         kind: "multiple" as const,
@@ -86,7 +68,39 @@ export const VERBAL_QUESTIONS: Question[] = [
       };
     }
 
-    // hver 5. ellers blir sequence (17)
+    if (n === "26") {
+      // spesialsekvens (5 elementer)
+      return {
+        id,
+        kind: "sequence" as const,
+        category: CategoryId.Verbal,
+        textKey: id,
+        itemsKey: [
+          `${id}-i1`,
+          `${id}-i2`,
+          `${id}-i3`,
+          `${id}-i4`,
+          `${id}-i5`,
+        ],
+        answerSequence: [3, 2, 0, 1, 4],
+        partialCredit: true,
+      };
+    }
+
+    if (n === "25") {
+      // eksplisitt sequence
+      return {
+        id,
+        kind: "sequence" as const,
+        category: CategoryId.Verbal,
+        textKey: id,
+        itemsKey: [`${id}-i1`, `${id}-i2`, `${id}-i3`, `${id}-i4`],
+        answerSequence: [1, 3, 0, 2],
+        partialCredit: true,
+      };
+    }
+
+    // === Generell regel: hvert 5. spørsmål sequence ===
     if (i % 5 === 0) {
       return {
         id,
@@ -99,7 +113,7 @@ export const VERBAL_QUESTIONS: Question[] = [
       };
     }
 
-    // resten multiple
+    // === Default multiple ===
     return {
       id,
       kind: "multiple" as const,
@@ -115,6 +129,7 @@ export const VERBAL_QUESTIONS: Question[] = [
     const n = String(31 + i).padStart(2, "0");
     const id = `q-verbal-${n}`;
 
+    // 35 → sequence
     if (i === 4) {
       return {
         id,
@@ -127,6 +142,7 @@ export const VERBAL_QUESTIONS: Question[] = [
       };
     }
 
+    // 36 → visual
     if (i === 5) {
       return {
         id,
@@ -139,6 +155,7 @@ export const VERBAL_QUESTIONS: Question[] = [
       };
     }
 
+    // Default multiple
     return {
       id,
       kind: "multiple" as const,
@@ -150,6 +167,7 @@ export const VERBAL_QUESTIONS: Question[] = [
   }),
 ];
 
+// --- Answer key ---
 export const ANSWER_KEY_VERBAL: Record<string, number> = Object.fromEntries(
   VERBAL_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
 );
