@@ -65,7 +65,7 @@ const seqQs: Question[] = [
     correctIndex: 0, // Cat
   },
 
-  // 34 → multiple (ikke sequence)
+  // 34 → multiple
   {
     id: "q-memory-34",
     kind: "multiple",
@@ -111,20 +111,66 @@ const seqQs: Question[] = [
     correctIndex: 2,
   },
 
-  // 37–40 → sequence
-  ...Array.from({ length: 4 }, (_, i) => {
-    const n = String(37 + i).padStart(2, "0");
-    const id = `q-memory-${n}`;
-    return {
-      id,
-      kind: "sequence" as const,
-      category: CategoryId.Memory,
-      textKey: id,
-      itemsKey: [`${id}-i1`, `${id}-i2`, `${id}-i3`, `${id}-i4`],
-      answerSequence: [1, 3, 0, 2],
-      partialCredit: true,
-    };
-  }),
+  // 37 → multiple (endret fra sequence)
+  {
+    id: "q-memory-37",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q-memory-37",
+    optionsKey: [
+      "q-memory-37-a",
+      "q-memory-37-b",
+      "q-memory-37-c",
+      "q-memory-37-d",
+    ],
+    correctIndex: 1,
+  },
+
+  // 38 → sequence (beholdt)
+  {
+    id: "q-memory-38",
+    kind: "sequence" as const,
+    category: CategoryId.Memory,
+    textKey: "q-memory-38",
+    itemsKey: [
+      "q-memory-38-i1",
+      "q-memory-38-i2",
+      "q-memory-38-i3",
+      "q-memory-38-i4",
+    ],
+    answerSequence: [1, 3, 0, 2],
+    partialCredit: true,
+  },
+
+  // 39 → multiple (endret)
+  {
+    id: "q-memory-39",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q-memory-39",
+    optionsKey: [
+      "q-memory-39-a",
+      "q-memory-39-b",
+      "q-memory-39-c",
+      "q-memory-39-d",
+    ],
+    correctIndex: 0,
+  },
+
+  // 40 → multiple (endret)
+  {
+    id: "q-memory-40",
+    kind: "multiple",
+    category: CategoryId.Memory,
+    textKey: "q-memory-40",
+    optionsKey: [
+      "q-memory-40-a",
+      "q-memory-40-b",
+      "q-memory-40-c",
+      "q-memory-40-d",
+    ],
+    correctIndex: 3,
+  },
 ];
 
 // --- Export all combined ---
