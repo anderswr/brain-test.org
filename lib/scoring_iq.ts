@@ -1,3 +1,4 @@
+// /lib/scoring_iq.ts
 import { CATEGORY_INDEX } from "@/data/question_index";
 import {
   AnswerMap,
@@ -63,10 +64,15 @@ export function computeResult(answers: AnswerMap): ComputedResult {
       // SEQUENCE
       else if (isSequence(q) && Array.isArray(ans)) {
         const correct = q.answerSequence;
-        const correctCount = ans.reduce(
-          (acc, v, i) => acc + (v === correct[i] ? 1 : 0),
-          0
+        const userSeq = ans.map((v) =>
+          typeof v === "number" ? v : parseInt(String(v), 10)
         );
+
+        let correctCount = 0;
+        for (let i = 0; i < Math.min(userSeq.length, correct.length); i++) {
+          if (userSeq[i] === correct[i]) correctCount++;
+        }
+
         score01 = q.partialCredit
           ? correctCount / correct.length
           : correctCount === correct.length
