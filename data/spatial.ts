@@ -20,7 +20,7 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 2 : 1,
+      correctIndex: [2, 1][i],
     };
   }),
 
@@ -35,7 +35,7 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 0 : 3,
+      correctIndex: [0, 3][i],
     };
   }),
 
@@ -50,7 +50,7 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 1 : 0,
+      correctIndex: [1, 0][i],
     };
   }),
 
@@ -65,7 +65,7 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 3 : 2,
+      correctIndex: [3, 2][i],
     };
   }),
 
@@ -80,7 +80,7 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 1 : 0,
+      correctIndex: [1, 0][i],
     };
   }),
 
@@ -95,7 +95,7 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 2 : 3,
+      correctIndex: [2, 3][i],
     };
   }),
 
@@ -110,7 +110,7 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 1 : 0,
+      correctIndex: [1, 0][i],
     };
   }),
 
@@ -125,17 +125,18 @@ export const SPATIAL_QUESTIONS: Question[] = [
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
       optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
-      correctIndex: i === 0 ? 3 : 2,
+      correctIndex: [3, 2][i],
     };
   }),
 
-  // --- Auto-generated (17–40) ---
+  // --- Auto-generated (17–40) alternating visual/matrix ---
   ...Array.from({ length: 24 }, (_, i) => {
     const n = String(17 + i).padStart(2, "0");
     const id = `q-spatial-${n}`;
+    const kind = i % 2 === 0 ? "visual" : "matrix";
     return {
       id,
-      kind: (i % 2 === 0 ? "visual" : "matrix") as "visual" | "matrix",
+      kind: kind as const,
       category: CategoryId.Spatial,
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
