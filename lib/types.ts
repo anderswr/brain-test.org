@@ -30,7 +30,7 @@ export type QuestionKind =
 
 /** Base structure shared by all questions */
 export interface BaseQuestion {
-  id: string;                 // e.g. "r1", "m12"
+  id: string;                 // e.g. "r1", "m12" or unified "q-xxx-yy"
   kind: QuestionKind;
   category: CategoryId;
   textKey: string;            // i18n key for the prompt (flat, e.g. "q-math-01")
@@ -38,14 +38,22 @@ export interface BaseQuestion {
   weight?: number;            // default: 1
   timeLimitSec?: number;      // optional soft limit
 
-  // ✅ new: used for memory questions that show a stimulus first
-  recallAfterView?: boolean;  // if true, show image/stimulus first, then ask
-  previewImage?: string;      // image to display before recall question
+  /**
+   * Optional stimulus shown BEFORE the actual question (memory “what did you just see?”)
+   * If provided, UI can render this image first and show a “Next” button to reveal the question.
+   */
+  previewImage?: string;
+
+  /**
+   * When true, UI should present a stimulus first (e.g., previewImage), then the question.
+   * This is intentionally UI-only metadata; scoring ignores it.
+   */
+  recallAfterView?: boolean;
 }
 
 /** Choice-based question (MCQ) */
 export interface ChoiceLike {
-  optionsKey: string[];       // flat keys, e.g. ["q-math-01-a", "q-math-01-b", ...]
+  optionsKey: string[];       // e.g. ["q-math-01-a", "q-math-01-b", ...]
   correctIndex: number;       // index (0-based)
 }
 
@@ -57,7 +65,7 @@ export interface MultipleQuestion extends BaseQuestion, ChoiceLike {
 /** MATRIX: Pattern recognition matrix with image */
 export interface MatrixQuestion extends BaseQuestion, ChoiceLike {
   kind: "matrix";
-  image: string;              // image path, e.g. "/assets/img/q/spatial/s01.png"
+  image: string;              // e.g. "/assets/img/q/spatial/s01.png"
 }
 
 /** VISUAL: Single rotation/match question with image */
@@ -69,7 +77,7 @@ export interface VisualQuestion extends BaseQuestion, ChoiceLike {
 /** SEQUENCE: Order given items correctly */
 export interface SequenceQuestion extends BaseQuestion {
   kind: "sequence";
-  itemsKey: string[];         // flat keys for items, e.g. ["q-math-seq_01-i1", "q-math-seq_01-i2"]
+  itemsKey: string[];         // e.g. ["q-math-11-i1", "q-math-11-i2", ...]
   answerSequence: number[];   // correct order as indices
   partialCredit?: boolean;    // if true, partial scoring allowed
 }
@@ -94,8 +102,13 @@ export type Question =
   | SequenceQuestion
   | RecallQuestion;
 
-/** User answers */
-export type AnswerValue = number | number[] | RecallToken[];
+/** User answers
+ *  - number: index for MCQ
+ *  - string: i18n key for MCQ (some UIs submit the option key directly)
+ *  - number[]: indices for sequence
+ *  - RecallToken[]: free recall entries
+ */
+export type AnswerValue = number | string | number[] | RecallToken[];
 export type AnswerMap = Record<string, AnswerValue>;
 
 /** Per-question scoring data */

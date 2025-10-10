@@ -1,3 +1,4 @@
+// app/result/[id]/page.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -18,14 +19,22 @@ import {
   ReferenceArea,
 } from "recharts";
 
-type IQResult = {
+type LegacyIQResult = {
   iq: number;
   ci: [number, number];
   percent: number;
   perCategory: Record<string, { percent: number }>;
 };
 
-type ResultDoc = { id: string; result?: IQResult };
+type NewIQResult = {
+  version: string;
+  iqEstimate: number;
+  totalPercent: number;
+  categoryScores: Record<CategoryId, number>;
+  ci?: [number, number];
+};
+
+type ResultDoc = { id: string; result?: LegacyIQResult | NewIQResult };
 
 export default function ResultPage({ params }: { params: { id: string } }) {
   const { dict } = useI18n();
@@ -36,16 +45,9 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     (async () => {
       try {
         const res = await fetch(`/api/result/${params.id}`, { cache: "no-store" });
-        if (!res.ok) {
-          setNotFound(true);
-          return;
-        }
+        if (!res.ok) return setNotFound(true);
         const json = await res.json();
-        // sanity-check: ensure json.result exists
-        if (!json?.result || typeof json.result.iq !== "number") {
-          setNotFound(true);
-          return;
-        }
+        if (!json?.result) return setNotFound(true);
         setData(json);
       } catch (err) {
         console.error("Result fetch failed", err);
@@ -54,9 +56,32 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     })();
   }, [params.id]);
 
+  // --- Normalize result structure ---
+  const normalized = useMemo(() => {
+    const r = data?.result as any;
+    if (!r) return null;
+
+    if ("iqEstimate" in r && "categoryScores" in r) {
+      // new structure
+      const iq = r.iqEstimate;
+      const ci: [number, number] = r.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
+      const perCategory = Object.fromEntries(
+        Object.entries(r.categoryScores).map(([k, v]) => [k, { percent: v }])
+      );
+      return { iq, ci, perCategory };
+    }
+
+    if ("iq" in r && "perCategory" in r) {
+      // legacy fallback
+      return { iq: r.iq, ci: r.ci ?? [90, 110], perCategory: r.perCategory };
+    }
+
+    return null;
+  }, [data]);
+
   const categories = useMemo(
-    () => Object.entries(data?.result?.perCategory || {}) as [CategoryId, { percent: number }][],
-    [data]
+    () => Object.entries(normalized?.perCategory || {}) as [CategoryId, { percent: number }][],
+    [normalized]
   );
 
   if (notFound) {
@@ -74,7 +99,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     );
   }
 
-  if (!data) {
+  if (!normalized) {
     return (
       <div className="app-shell">
         <SiteHeader />
@@ -88,23 +113,19 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     );
   }
 
-  const iq = data.result?.iq ?? 100;
-  const ci = data.result?.ci ?? [90, 110];
+  const { iq, ci } = normalized;
 
   return (
     <div className="app-shell">
       <SiteHeader />
       <main className="container">
-        {/* --- HEADER --- */}
+        {/* HEADER */}
         <article className="panel head p-6 score-hero">
           <div className="score-hero__left">
             <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
             <div className="row" style={{ gap: 8, alignItems: "center" }}>
-              <code className="code-badge">{data.id}</code>
-              <button
-                className="btn"
-                onClick={() => navigator.clipboard.writeText(data.id)}
-              >
+              <code className="code-badge">{data?.id}</code>
+              <button className="btn" onClick={() => navigator.clipboard.writeText(data?.id || "")}>
                 {t(dict, "ui-result-copy_id", "Copy ID")}
               </button>
             </div>
@@ -127,7 +148,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
           </div>
         </article>
 
-        {/* --- CATEGORIES --- */}
+        {/* CATEGORY SCORES */}
         {categories.length > 0 && (
           <section className="grid-cards mt-6">
             {categories.map(([cat, val]) => (
@@ -148,43 +169,13 @@ export default function ResultPage({ params }: { params: { id: string } }) {
           </section>
         )}
 
-        {/* --- IQ DISTRIBUTION --- */}
+        {/* IQ DISTRIBUTION */}
         <section className="panel mt-8 p-6">
-          <h2 className="mb-3">
-            {t(dict, "ui-result-iq_distribution", "IQ Distribution")}
-          </h2>
+          <h2 className="mb-3">{t(dict, "ui-result-iq_distribution", "IQ Distribution")}</h2>
           <IQBellChart userIQ={iq} ci={ci} />
-          <p className="muted mt-3">
-            {t(
-              dict,
-              "ui-result-iq_explainer_short",
-              "Your IQ estimate (mean = 100, SD = 15) is plotted on a normal curve."
-            )}
-          </p>
         </section>
       </main>
       <SiteFooter />
-
-      <style jsx>{`
-        .score-ring {
-          width: 148px;
-          height: 148px;
-          border-radius: 999px;
-          display: grid;
-          place-items: center;
-          background: linear-gradient(135deg, #2563eb, #3b82f6);
-          color: #fff;
-        }
-        .score-ring__value {
-          font-size: 44px;
-          font-weight: 700;
-        }
-        .score-ring__label {
-          font-size: 12px;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-      `}</style>
     </div>
   );
 }
@@ -193,7 +184,6 @@ export default function ResultPage({ params }: { params: { id: string } }) {
 function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
   const mu = 100;
   const sigma = 15;
-
   const points = Array.from({ length: 91 }, (_, i) => {
     const x = 55 + i;
     const y =
@@ -201,7 +191,6 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
       Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2));
     return { x, y };
   });
-
   const maxY = Math.max(...points.map((p) => p.y));
 
   const ranges = [
@@ -211,8 +200,6 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
     { from: 115, to: 129, label: "115–129 – Above Average", color: "#3b82f6" },
     { from: 130, to: 145, label: "130+ – Gifted", color: "#a855f7" },
   ];
-
-  if (!ci || ci.length !== 2) ci = [90, 110]; // fallback safety
 
   return (
     <div style={{ width: "100%", height: 260 }}>
