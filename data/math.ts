@@ -18,12 +18,7 @@ export const MATH_QUESTIONS: Question[] = [
       kind: "multiple" as const,
       category: CategoryId.Math,
       textKey: id,
-      optionsKey: [
-        `${id}-a`,
-        `${id}-b`,
-        `${id}-c`,
-        `${id}-d`,
-      ],
+      optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
       correctIndex: (i + 2) % 4,
     };
   }),
@@ -44,52 +39,60 @@ export const MATH_QUESTIONS: Question[] = [
   }),
 
   // --- Visual/matrix (13–14) ---
-  ...[
-    {
-      id: "q-math-13",
-      kind: "matrix" as const,
-      category: CategoryId.Math,
-      textKey: "q-math-13",
-      image: "/assets/img/q/math/m13.png",
-      optionsKey: [
-        "q-math-13-a",
-        "q-math-13-b",
-        "q-math-13-c",
-        "q-math-13-d",
-      ],
-      correctIndex: 2,
-    },
-    {
-      id: "q-math-14",
-      kind: "visual" as const,
-      category: CategoryId.Math,
-      textKey: "q-math-14",
-      image: "/assets/img/q/math/m14.png",
-      optionsKey: [
-        "q-math-14-a",
-        "q-math-14-b",
-        "q-math-14-c",
-        "q-math-14-d",
-      ],
-      correctIndex: 1,
-    },
-  ],
+  {
+    id: "q-math-13",
+    kind: "matrix",
+    category: CategoryId.Math,
+    textKey: "q-math-13",
+    image: "/assets/img/q/math/m13.png",
+    optionsKey: [
+      "q-math-13-a",
+      "q-math-13-b",
+      "q-math-13-c",
+      "q-math-13-d",
+    ],
+    correctIndex: 2,
+  },
+  {
+    id: "q-math-14",
+    kind: "visual",
+    category: CategoryId.Math,
+    textKey: "q-math-14",
+    image: "/assets/img/q/math/m14.png",
+    optionsKey: [
+      "q-math-14-a",
+      "q-math-14-b",
+      "q-math-14-c",
+      "q-math-14-d",
+    ],
+    correctIndex: 1,
+  },
 
   // --- Worded math problems and remaining (15–40) ---
   ...Array.from({ length: 26 }, (_, i) => {
     const n = String(15 + i).padStart(2, "0");
     const id = `q-math-${n}`;
+
+    // 🔸 Special rule: 23 & 24 are SEQUENCE-type
+    if (n === "23" || n === "24") {
+      return {
+        id,
+        kind: "sequence" as const,
+        category: CategoryId.Math,
+        textKey: id,
+        itemsKey: [`${id}-i1`, `${id}-i2`, `${id}-i3`, `${id}-i4`],
+        answerSequence: n === "23" ? [0, 2, 3, 1] : [3, 1, 0, 2],
+        partialCredit: true,
+      };
+    }
+
+    // Default multiple choice
     return {
       id,
       kind: "multiple" as const,
       category: CategoryId.Math,
       textKey: id,
-      optionsKey: [
-        `${id}-a`,
-        `${id}-b`,
-        `${id}-c`,
-        `${id}-d`,
-      ],
+      optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
       correctIndex: (i * 3) % 4,
     };
   }),
