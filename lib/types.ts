@@ -37,6 +37,10 @@ export interface BaseQuestion {
   infoKey?: string;           // optional hint/extra instruction
   weight?: number;            // default: 1
   timeLimitSec?: number;      // optional soft limit
+
+  // ✅ new: used for memory questions that show a stimulus first
+  recallAfterView?: boolean;  // if true, show image/stimulus first, then ask
+  previewImage?: string;      // image to display before recall question
 }
 
 /** Choice-based question (MCQ) */
