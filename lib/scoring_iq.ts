@@ -1,4 +1,3 @@
-// /lib/scoring_iq.ts
 import { CATEGORY_INDEX } from "@/data/question_index";
 import {
   AnswerMap,
@@ -10,9 +9,21 @@ import {
   isSequence,
   BANK_VERSION,
   PerQuestionScore,
-  ComputedResult,
-  CategoryScores,
 } from "@/lib/types";
+
+/** --- Type definitions --- */
+export interface ComputedResult {
+  version: string;
+  categoryScores: Record<CategoryId, number>;
+  totalPercent: number;
+  iqEstimate: number;
+  perQuestion: PerQuestionScore[];
+  raw: {
+    totalQuestions: number;
+    totalWeighted: number;
+    totalCorrectWeighted: number;
+  };
+}
 
 /** --- Main scoring entry --- */
 export function computeResult(answers: AnswerMap): ComputedResult {
@@ -78,7 +89,7 @@ export function computeResult(answers: AnswerMap): ComputedResult {
   }
 
   // --- Category-level results ---
-  const categoryScores: CategoryScores = {
+  const categoryScores: Record<CategoryId, number> = {
     reasoning: percent(categoryTotals.reasoning),
     math: percent(categoryTotals.math),
     verbal: percent(categoryTotals.verbal),
