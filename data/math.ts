@@ -2,94 +2,93 @@
 import { CategoryId, Question } from "@/lib/types";
 
 /**
- * Math questions — using flat i18n key format.
+ * Math questions — unified ID + textKey format.
  * Example:
  *   "q-math-01"       → question text
  *   "q-math-01-a" ... → answer choices
  *   "q-math-11-i1" .. → sequence items
  */
 export const MATH_QUESTIONS: Question[] = [
-  // --- Multiple choice numeric patterns ---
+  // --- Multiple choice numeric patterns (01–10) ---
   ...Array.from({ length: 10 }, (_, i) => {
     const n = String(i + 1).padStart(2, "0");
+    const id = `q-math-${n}`;
     return {
-      id: `m${i + 1}`,
+      id,
       kind: "multiple" as const,
       category: CategoryId.Math,
-      textKey: `q-math-${n}`,
+      textKey: id,
       optionsKey: [
-        `q-math-${n}-a`,
-        `q-math-${n}-b`,
-        `q-math-${n}-c`,
-        `q-math-${n}-d`,
+        `${id}-a`,
+        `${id}-b`,
+        `${id}-c`,
+        `${id}-d`,
       ],
       correctIndex: (i + 2) % 4,
     };
   }),
 
-  // --- Sequence ordering ---
-  {
-    id: "m11",
-    kind: "sequence",
-    category: CategoryId.Math,
-    textKey: "q-math-11",
-    itemsKey: ["q-math-11-i1", "q-math-11-i2", "q-math-11-i3", "q-math-11-i4"],
-    answerSequence: [3, 2, 1, 0], // ✅ numeric indices, not strings
-    partialCredit: true,
-  },
-  {
-    id: "m12",
-    kind: "sequence",
-    category: CategoryId.Math,
-    textKey: "q-math-12",
-    itemsKey: ["q-math-12-i1", "q-math-12-i2", "q-math-12-i3", "q-math-12-i4"],
-    answerSequence: [1, 2, 0, 3], // ✅ numeric indices
-    partialCredit: true,
-  },
+  // --- Sequence ordering (11–12) ---
+  ...Array.from({ length: 2 }, (_, i) => {
+    const n = String(11 + i).padStart(2, "0");
+    const id = `q-math-${n}`;
+    return {
+      id,
+      kind: "sequence" as const,
+      category: CategoryId.Math,
+      textKey: id,
+      itemsKey: [`${id}-i1`, `${id}-i2`, `${id}-i3`, `${id}-i4`],
+      answerSequence: i === 0 ? [3, 2, 1, 0] : [1, 2, 0, 3],
+      partialCredit: true,
+    };
+  }),
 
-  // --- Visual/matrix ---
-  {
-    id: "m13",
-    kind: "matrix",
-    category: CategoryId.Math,
-    textKey: "q-math-13",
-    image: "/assets/img/q/math/m13.png",
-    optionsKey: [
-      "q-math-13-a",
-      "q-math-13-b",
-      "q-math-13-c",
-      "q-math-13-d",
-    ],
-    correctIndex: 2,
-  },
-  {
-    id: "m14",
-    kind: "visual",
-    category: CategoryId.Math,
-    textKey: "q-math-14",
-    image: "/assets/img/q/math/m14.png",
-    optionsKey: [
-      "q-math-14-a",
-      "q-math-14-b",
-      "q-math-14-c",
-      "q-math-14-d",
-    ],
-    correctIndex: 1,
-  },
+  // --- Visual/matrix (13–14) ---
+  ...[
+    {
+      id: "q-math-13",
+      kind: "matrix" as const,
+      category: CategoryId.Math,
+      textKey: "q-math-13",
+      image: "/assets/img/q/math/m13.png",
+      optionsKey: [
+        "q-math-13-a",
+        "q-math-13-b",
+        "q-math-13-c",
+        "q-math-13-d",
+      ],
+      correctIndex: 2,
+    },
+    {
+      id: "q-math-14",
+      kind: "visual" as const,
+      category: CategoryId.Math,
+      textKey: "q-math-14",
+      image: "/assets/img/q/math/m14.png",
+      optionsKey: [
+        "q-math-14-a",
+        "q-math-14-b",
+        "q-math-14-c",
+        "q-math-14-d",
+      ],
+      correctIndex: 1,
+    },
+  ],
 
   // --- Worded math problems and remaining (15–40) ---
   ...Array.from({ length: 26 }, (_, i) => {
     const n = String(15 + i).padStart(2, "0");
+    const id = `q-math-${n}`;
     return {
-      id: `m${15 + i}`,
+      id,
       kind: "multiple" as const,
       category: CategoryId.Math,
-      textKey: `q-math-${n}`,
+      textKey: id,
       optionsKey: [
-        `q-math-${n}-a`,
-        `q-math-${n}-b`,
-        `q-math-${n}-c`,
-        `q-math-${n}-d`,
+        `${id}-a`,
+        `${id}-b`,
+        `${id}-c`,
+        `${id}-d`,
       ],
       correctIndex: (i * 3) % 4,
     };
