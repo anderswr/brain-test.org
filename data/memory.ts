@@ -1,14 +1,42 @@
+// /data/memory.ts
 import { CategoryId, Question } from "@/lib/types";
 
 /**
  * MEMORY MODULE (40 questions total)
  * Flat key format for i18n: q-memory-XX, q-memory-XX-a... or q-memory-XX-i1...
+ * Some questions are "recallAfterView" — they require a stimulus (image/list) first.
  */
 
 // --- Base multiple-choice (01–14) ---
 const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
   const id = `q-memory-${n}`;
+
+  // Mark recall-after-view questions
+  const recallAfterView = [
+    "05",
+    "06",
+    "07",
+    "08",
+    "09",
+    "10",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+    "24",
+    "25",
+    "26",
+    "27",
+    "33",
+    "34",
+  ].includes(n);
+
   return {
     id,
     kind: "multiple" as const,
@@ -16,6 +44,10 @@ const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
     textKey: id,
     optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
     correctIndex: (i + 1) % 4,
+    ...(recallAfterView && {
+      recallAfterView: true,
+      previewImage: `/assets/img/q/memory/stim_${n}.png`,
+    }),
   };
 });
 
@@ -23,6 +55,17 @@ const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
 const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
   const n = String(15 + i).padStart(2, "0");
   const id = `q-memory-${n}`;
+  const recallAfterView = [
+    "15",
+    "16",
+    "17",
+    "18",
+    "19",
+    "20",
+    "21",
+    "22",
+    "23",
+  ].includes(n);
   return {
     id,
     kind: "visual" as const,
@@ -31,6 +74,10 @@ const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
     image: `/assets/img/q/memory/mem_${n}.png`,
     optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
     correctIndex: (i + 1) % 4,
+    ...(recallAfterView && {
+      recallAfterView: true,
+      previewImage: `/assets/img/q/memory/stim_${n}.png`,
+    }),
   };
 });
 
@@ -38,6 +85,7 @@ const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
 const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => {
   const n = String(24 + i).padStart(2, "0");
   const id = `q-memory-${n}`;
+  const recallAfterView = ["24", "25", "26", "27", "33", "34"].includes(n);
   return {
     id,
     kind: "multiple" as const,
@@ -45,12 +93,16 @@ const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => {
     textKey: id,
     optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
     correctIndex: (i + 2) % 4,
+    ...(recallAfterView && {
+      recallAfterView: true,
+      previewImage: `/assets/img/q/memory/stim_${n}.png`,
+    }),
   };
 });
 
 // --- Mixed recall & sequence (33–40) ---
 const seqQs: Question[] = [
-  // 33 → multiple
+  // 33 → recallAfterView multiple
   {
     id: "q-memory-33",
     kind: "multiple",
@@ -63,9 +115,11 @@ const seqQs: Question[] = [
       "q-memory-33-d",
     ],
     correctIndex: 0, // Cat
+    recallAfterView: true,
+    previewImage: "/assets/img/q/memory/stim_33.png",
   },
 
-  // 34 → multiple
+  // 34 → recallAfterView multiple
   {
     id: "q-memory-34",
     kind: "multiple",
@@ -78,6 +132,8 @@ const seqQs: Question[] = [
       "q-memory-34-d",
     ],
     correctIndex: 2,
+    recallAfterView: true,
+    previewImage: "/assets/img/q/memory/stim_34.png",
   },
 
   // 35 → sequence
@@ -111,66 +167,19 @@ const seqQs: Question[] = [
     correctIndex: 2,
   },
 
-  // 37 → multiple (endret fra sequence)
-  {
-    id: "q-memory-37",
-    kind: "multiple",
-    category: CategoryId.Memory,
-    textKey: "q-memory-37",
-    optionsKey: [
-      "q-memory-37-a",
-      "q-memory-37-b",
-      "q-memory-37-c",
-      "q-memory-37-d",
-    ],
-    correctIndex: 1,
-  },
-
-  // 38 → sequence (beholdt)
-  {
-    id: "q-memory-38",
-    kind: "sequence" as const,
-    category: CategoryId.Memory,
-    textKey: "q-memory-38",
-    itemsKey: [
-      "q-memory-38-i1",
-      "q-memory-38-i2",
-      "q-memory-38-i3",
-      "q-memory-38-i4",
-    ],
-    answerSequence: [1, 3, 0, 2],
-    partialCredit: true,
-  },
-
-  // 39 → multiple (endret)
-  {
-    id: "q-memory-39",
-    kind: "multiple",
-    category: CategoryId.Memory,
-    textKey: "q-memory-39",
-    optionsKey: [
-      "q-memory-39-a",
-      "q-memory-39-b",
-      "q-memory-39-c",
-      "q-memory-39-d",
-    ],
-    correctIndex: 0,
-  },
-
-  // 40 → multiple (endret)
-  {
-    id: "q-memory-40",
-    kind: "multiple",
-    category: CategoryId.Memory,
-    textKey: "q-memory-40",
-    optionsKey: [
-      "q-memory-40-a",
-      "q-memory-40-b",
-      "q-memory-40-c",
-      "q-memory-40-d",
-    ],
-    correctIndex: 3,
-  },
+  // 37–40 → multiple (ikke recall)
+  ...Array.from({ length: 4 }, (_, i) => {
+    const n = String(37 + i).padStart(2, "0");
+    const id = `q-memory-${n}`;
+    return {
+      id,
+      kind: "multiple" as const,
+      category: CategoryId.Memory,
+      textKey: id,
+      optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
+      correctIndex: (i + 1) % 4,
+    };
+  }),
 ];
 
 // --- Export all combined ---
