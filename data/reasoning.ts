@@ -161,7 +161,7 @@ export const REASONING_QUESTIONS: Question[] = [
   // --- Visual & Matrix wrap-up (37–38) ---
   {
     id: "q-reasoning-37",
-    kind: "visual",
+    kind: "visual" as const,
     category: CategoryId.Reasoning,
     textKey: "q-reasoning-37",
     image: "/assets/img/q/reasoning/r37.png",
@@ -175,7 +175,7 @@ export const REASONING_QUESTIONS: Question[] = [
   },
   {
     id: "q-reasoning-38",
-    kind: "matrix",
+    kind: "matrix" as const,
     category: CategoryId.Reasoning,
     textKey: "q-reasoning-38",
     image: "/assets/img/q/reasoning/r38.png",
@@ -191,7 +191,7 @@ export const REASONING_QUESTIONS: Question[] = [
   // --- Final multiple (39–40) ---
   {
     id: "q-reasoning-39",
-    kind: "multiple",
+    kind: "multiple" as const,
     category: CategoryId.Reasoning,
     textKey: "q-reasoning-39",
     optionsKey: [
@@ -204,7 +204,7 @@ export const REASONING_QUESTIONS: Question[] = [
   },
   {
     id: "q-reasoning-40",
-    kind: "multiple",
+    kind: "multiple" as const,
     category: CategoryId.Reasoning,
     textKey: "q-reasoning-40",
     optionsKey: [

@@ -133,9 +133,10 @@ export const SPATIAL_QUESTIONS: Question[] = [
   ...Array.from({ length: 24 }, (_, i) => {
     const n = String(17 + i).padStart(2, "0");
     const id = `q-spatial-${n}`;
+    const kind = (i % 2 === 0 ? "visual" : "matrix") as "visual" | "matrix";
     return {
       id,
-      kind: (i % 2 === 0 ? "visual" : "matrix") as "visual" | "matrix",
+      kind,
       category: CategoryId.Spatial,
       textKey: id,
       image: `/assets/img/q/spatial/s${n}.png`,
