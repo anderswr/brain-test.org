@@ -17,6 +17,7 @@ export default function TestPage() {
   const [answers, setAnswers] = React.useState<Record<string, any>>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [showPreview, setShowPreview] = React.useState(true); // 👈 for memory/recall preview
 
   const item = QUESTION_BANK[idx] as Question;
 
@@ -75,9 +76,8 @@ export default function TestPage() {
 
   /** Renderer spørsmål avhengig av type */
   function renderQuestion(q: Question) {
-    // Felles bildevisning
-    const renderImage = () => {
-      if (!q.image) return null;
+    const renderImage = (src?: string) => {
+      if (!src) return null;
       return (
         <div
           style={{
@@ -86,9 +86,8 @@ export default function TestPage() {
             marginBottom: 12,
           }}
         >
-          {/* Next.js optimalisert bilde */}
           <Image
-            src={q.image}
+            src={src}
             alt={q.id}
             width={512}
             height={512}
@@ -100,18 +99,37 @@ export default function TestPage() {
               maxWidth: "100%",
               height: "auto",
             }}
-            onError={() => console.warn("[IMAGE MISSING]", q.id, q.image)}
+            onError={() => console.warn("[IMAGE MISSING]", q.id, src)}
             priority
           />
         </div>
       );
     };
 
+    // 🔹 MEMORY-preview (viser bilde først)
+    if (q.recallAfterView && q.previewImage && showPreview) {
+      return (
+        <div style={{ textAlign: "center" }}>
+          {renderImage(q.previewImage)}
+          <p style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
+            Memorize the image. You will be asked about it shortly.
+          </p>
+          <button
+            className="btn"
+            style={{ marginTop: 16 }}
+            onClick={() => setShowPreview(false)}
+          >
+            Next →
+          </button>
+        </div>
+      );
+    }
+
     // 🔹 Multiple-choice / visual / matrix
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {renderImage()}
+          {renderImage(q.image)}
 
           {q.optionsKey.map((optKey: string, i: number) => (
             <label
@@ -149,7 +167,6 @@ export default function TestPage() {
           const newOrder = exists
             ? current.filter((x: string) => x !== itemKey)
             : [...current, itemKey];
-          console.debug("[SEQUENCE]", q.id, newOrder);
           return { ...prev, [q.id]: newOrder };
         });
       };
@@ -158,8 +175,7 @@ export default function TestPage() {
 
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {renderImage()}
-
+          {renderImage(q.image)}
           {q.itemsKey.map((itmKey: string, i: number) => {
             const pos = selected.indexOf(itmKey);
             const selectedNum = pos >= 0 ? pos + 1 : null;
@@ -218,16 +234,38 @@ export default function TestPage() {
       );
     }
 
+    // 🔹 Recall-type (fritt minne, f.eks. etter bilde)
+    if (q.kind === "recall") {
+      return (
+        <div style={{ display: "grid", gap: 8 }}>
+          <textarea
+            placeholder="Type what you remember..."
+            rows={3}
+            style={{
+              padding: 8,
+              borderRadius: 8,
+              border: "1px solid #ccc",
+              resize: "none",
+            }}
+            value={(answers[q.id] as string) || ""}
+            onChange={(e) =>
+              setAnswers({ ...answers, [q.id]: e.target.value.trim() })
+            }
+          />
+        </div>
+      );
+    }
+
     // 🔹 fallback
     return (
       <div style={{ textAlign: "center" }}>
-        {renderImage()}
+        {renderImage(q.image)}
         <p>Unsupported question type</p>
       </div>
     );
   }
 
-  // Debug: logg hvilken oppgave som vises
+  // Debug / reset preview ved spørsmålsskifte
   React.useEffect(() => {
     console.debug(
       `[STATE] Showing #${idx + 1}/${QUESTION_BANK.length} →`,
@@ -235,6 +273,7 @@ export default function TestPage() {
       item?.category,
       answers
     );
+    setShowPreview(true); // 👈 reset for nye spørsmål
   }, [idx, answers]);
 
   return (
@@ -262,7 +301,7 @@ export default function TestPage() {
           {/* --- spørsmålsvisning med animasjon --- */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={item.id}
+              key={item.id + (showPreview ? "-preview" : "-main")}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -273,38 +312,40 @@ export default function TestPage() {
           </AnimatePresence>
 
           {/* --- navigasjon --- */}
-          <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-            <button
-              className="btn"
-              onClick={() => setIdx((i) => Math.max(0, i - 1))}
-              disabled={idx === 0 || submitting}
-            >
-              ← {t(dict, "cta-back", "Back")}
-            </button>
+          {!item.recallAfterView || !showPreview ? (
+            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+              <button
+                className="btn"
+                onClick={() => setIdx((i) => Math.max(0, i - 1))}
+                disabled={idx === 0 || submitting}
+              >
+                ← {t(dict, "cta-back", "Back")}
+              </button>
 
-            {idx < QUESTION_BANK.length - 1 ? (
-              <button
-                className="btn"
-                onClick={() =>
-                  setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))
-                }
-                disabled={answers[item.id] === undefined || submitting}
-              >
-                {t(dict, "cta-continue", "Continue")} →
-              </button>
-            ) : (
-              <button
-                className="btn"
-                onClick={() => submit()}
-                disabled={
-                  Object.keys(answers).length !== QUESTION_BANK.length ||
-                  submitting
-                }
-              >
-                {t(dict, "cta-submit", "Finish and see result")} ✓
-              </button>
-            )}
-          </div>
+              {idx < QUESTION_BANK.length - 1 ? (
+                <button
+                  className="btn"
+                  onClick={() =>
+                    setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))
+                  }
+                  disabled={answers[item.id] === undefined || submitting}
+                >
+                  {t(dict, "cta-continue", "Continue")} →
+                </button>
+              ) : (
+                <button
+                  className="btn"
+                  onClick={() => submit()}
+                  disabled={
+                    Object.keys(answers).length !== QUESTION_BANK.length ||
+                    submitting
+                  }
+                >
+                  {t(dict, "cta-submit", "Finish and see result")} ✓
+                </button>
+              )}
+            </div>
+          ) : null}
 
           {/* --- feilvisning --- */}
           {error && (
