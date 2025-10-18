@@ -1,5 +1,3 @@
-// /lib/types.ts
-
 /** Versioning for question compatibility */
 export const BANK_VERSION = "iq-bank-2.0.0" as const;
 
@@ -39,68 +37,67 @@ export interface BaseQuestion {
   timeLimitSec?: number;      // optional soft limit
 
   /**
-   * Optional stimulus image shown directly in the question UI.
-   * For visual, matrix and memory categories this is typically set.
+   * Optional image shown directly within the question UI
+   * (used for visual, matrix, etc.)
    */
   image?: string;
 
   /**
-   * Optional stimulus shown BEFORE the actual question (memory “what did you just see?”)
-   * If provided, UI can render this image first and show a “Next” button to reveal the question.
+   * Optional preview image shown BEFORE the actual question (for memory recall tasks)
    */
   previewImage?: string;
 
   /**
-   * When true, UI should present a stimulus first (e.g., previewImage), then the question.
-   * This is intentionally UI-only metadata; scoring ignores it.
+   * If true, the question first shows a preview/stimulus (e.g. previewImage),
+   * then later the actual question — used for delayed recall.
    */
   recallAfterView?: boolean;
 }
 
 /** Choice-based question (MCQ) */
 export interface ChoiceLike {
-  optionsKey: string[];       // e.g. ["q-math-01-a", "q-math-01-b", ...]
-  correctIndex: number;       // index (0-based)
+  optionsKey: string[];
+  correctIndex: number;
 }
 
-/** MULTIPLE: Text-only question */
+/** MULTIPLE: Text-only MCQ */
 export interface MultipleQuestion extends BaseQuestion, ChoiceLike {
   kind: "multiple";
 }
 
-/** MATRIX: Pattern recognition matrix with image */
+/** MATRIX: Pattern recognition with an image */
 export interface MatrixQuestion extends BaseQuestion, ChoiceLike {
   kind: "matrix";
-  image: string;              // e.g. "/assets/img/q/spatial/s01.png"
+  image: string;
 }
 
-/** VISUAL: Single rotation/match question with image */
+/** VISUAL: Image-based rotation/matching */
 export interface VisualQuestion extends BaseQuestion, ChoiceLike {
   kind: "visual";
   image: string;
 }
 
-/** SEQUENCE: Order given items correctly */
+/** SEQUENCE: Order items correctly */
 export interface SequenceQuestion extends BaseQuestion {
   kind: "sequence";
-  itemsKey: string[];         // e.g. ["q-math-11-i1", "q-math-11-i2", ...]
-  answerSequence: number[];   // correct order as indices
-  partialCredit?: boolean;    // if true, partial scoring allowed
+  itemsKey: string[];
+  answerSequence: number[];
+  partialCredit?: boolean;
 }
 
-/** RECALL: Remember and recall short list of tokens */
+/** RECALL: Free recall or short-list memory */
 export type RecallToken = string | number;
 
 export interface RecallQuestion extends BaseQuestion {
   kind: "recall";
   correctAnswer: RecallToken[];
-  match: "exact" | "ci" | "set";  // matching rule
+  match: "exact" | "ci" | "set";
   orderSensitive?: boolean;
   normalizeKey?: string;
   maxEditDistance?: number;
 }
 
-/** Unified question type */
+/** Unified type for all questions */
 export type Question =
   | MultipleQuestion
   | MatrixQuestion
@@ -108,12 +105,7 @@ export type Question =
   | SequenceQuestion
   | RecallQuestion;
 
-/** User answers
- *  - number: index for MCQ
- *  - string: i18n key for MCQ (some UIs submit the option key directly)
- *  - number[]: indices for sequence
- *  - RecallToken[]: free recall entries
- */
+/** User answer types */
 export type AnswerValue = number | string | number[] | RecallToken[];
 export type AnswerMap = Record<string, AnswerValue>;
 
@@ -126,10 +118,10 @@ export interface PerQuestionScore {
   score01: number; // normalized 0..1
 }
 
-/** Category scores normalized to 0–100 */
+/** Category scores (0–100) */
 export type CategoryScores = Record<CategoryId, number>;
 
-/** Raw score data */
+/** Raw count data */
 export interface RawCounts {
   totalQuestions: number;
   totalWeighted: number;
@@ -146,7 +138,7 @@ export interface ComputedResult {
   raw: RawCounts;
 }
 
-/** Lightweight category→IDs index */
+/** Category→IDs index */
 export type ByCategoryIndex = Record<CategoryId, string[]>;
 
 /** Type guards */
