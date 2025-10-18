@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
@@ -23,12 +24,9 @@ export default function TestPage() {
   function setChoice(choiceIndex: number) {
     const updated = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
-    console.debug(
-      `[ANSWERED] ${item.id} (${item.textKey}) → ${choiceIndex}`,
-      updated
-    );
+    console.debug(`[ANSWERED] ${item.id} → ${choiceIndex}`, updated);
 
-    // 🔹 Automatisk gå videre (eller send inn hvis siste spørsmål)
+    // Auto-next eller submit på siste
     setTimeout(() => {
       if (idx < QUESTION_BANK.length - 1) {
         setIdx((i) => Math.min(i + 1, QUESTION_BANK.length - 1));
@@ -39,7 +37,7 @@ export default function TestPage() {
     }, 250);
   }
 
-  /** Viser oversatt tekst + nøkkel for debugging */
+  /** Oversetter nøkkel med fallback + viser key for debugging */
   function renderText(dict: any, key: string, fallback = "") {
     const text = t(dict, key, fallback);
     return (
@@ -77,10 +75,44 @@ export default function TestPage() {
 
   /** Renderer spørsmål avhengig av type */
   function renderQuestion(q: Question) {
-    // 🔹 Multiple-choice / visual
+    // Felles bildevisning
+    const renderImage = () => {
+      if (!q.image) return null;
+      return (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 12,
+          }}
+        >
+          {/* Next.js optimalisert bilde */}
+          <Image
+            src={q.image}
+            alt={q.id}
+            width={512}
+            height={512}
+            style={{
+              borderRadius: 8,
+              border: "1px solid #ddd",
+              background: "white",
+              objectFit: "contain",
+              maxWidth: "100%",
+              height: "auto",
+            }}
+            onError={() => console.warn("[IMAGE MISSING]", q.id, q.image)}
+            priority
+          />
+        </div>
+      );
+    };
+
+    // 🔹 Multiple-choice / visual / matrix
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
+          {renderImage()}
+
           {q.optionsKey.map((optKey: string, i: number) => (
             <label
               key={i}
@@ -97,7 +129,7 @@ export default function TestPage() {
                 type="radio"
                 name={`q-${q.id}`}
                 checked={answers[q.id] === i}
-                onChange={() => setChoice(i)} // ✅ bruker indeks, ikke nøkkel
+                onChange={() => setChoice(i)}
               />
               {renderText(dict, optKey, `Missing: ${optKey}`)}
             </label>
@@ -126,6 +158,8 @@ export default function TestPage() {
 
       return (
         <div style={{ display: "grid", gap: 8 }}>
+          {renderImage()}
+
           {q.itemsKey.map((itmKey: string, i: number) => {
             const pos = selected.indexOf(itmKey);
             const selectedNum = pos >= 0 ? pos + 1 : null;
@@ -185,10 +219,15 @@ export default function TestPage() {
     }
 
     // 🔹 fallback
-    return <p>Unsupported question type</p>;
+    return (
+      <div style={{ textAlign: "center" }}>
+        {renderImage()}
+        <p>Unsupported question type</p>
+      </div>
+    );
   }
 
-  // Debug hvilken oppgave som vises
+  // Debug: logg hvilken oppgave som vises
   React.useEffect(() => {
     console.debug(
       `[STATE] Showing #${idx + 1}/${QUESTION_BANK.length} →`,
@@ -249,7 +288,7 @@ export default function TestPage() {
                 onClick={() =>
                   setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))
                 }
-                disabled={!answers[item.id] || submitting}
+                disabled={answers[item.id] === undefined || submitting}
               >
                 {t(dict, "cta-continue", "Continue")} →
               </button>
