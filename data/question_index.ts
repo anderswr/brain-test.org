@@ -6,6 +6,11 @@ import { VERBAL_QUESTIONS } from "@/data/verbal";
 import { SPATIAL_QUESTIONS } from "@/data/spatial";
 import { MEMORY_QUESTIONS } from "@/data/memory";
 
+/**
+ * Unified question registry for the entire IQ test.
+ * Handles sampling, shuffling, and category balancing.
+ */
+
 /** --- Helper utilities --- */
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -30,7 +35,7 @@ export const CATEGORY_INDEX = {
   memory: MEMORY_QUESTIONS,
 };
 
-/** --- Sampling config (balance categories) --- */
+/** --- Sampling config: keep categories balanced --- */
 const CATEGORY_SAMPLE = {
   reasoning: 8,
   math: 8,
@@ -52,6 +57,7 @@ export const QUESTION_BANK: Question[] = shuffle([
 export const ALL_CATEGORY_IDS = Object.keys(CATEGORY_INDEX);
 export const BANK_VERSION = "2.1.0" as const;
 
+/** --- Debug info --- */
 console.log(
   `[IQ-Test] Loaded ${QUESTION_BANK.length} shuffled questions:`,
   Object.fromEntries(Object.entries(CATEGORY_SAMPLE))
