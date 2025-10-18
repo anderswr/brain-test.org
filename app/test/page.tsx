@@ -1,4 +1,3 @@
-// app/test/page.tsx
 "use client";
 
 import * as React from "react";
@@ -17,44 +16,37 @@ export default function TestPage() {
   const [answers, setAnswers] = React.useState<Record<string, any>>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const [showPreview, setShowPreview] = React.useState(true); // 👈 for memory/recall preview
+
+  // --- NEW: track which previews have already been shown ---
+  const [shownPreviews, setShownPreviews] = React.useState<Record<string, boolean>>({});
+  const [showPreview, setShowPreview] = React.useState(true);
 
   const item = QUESTION_BANK[idx] as Question;
 
-  /** Setter valgt svar (brukes for MCQ og visual) + auto-next */
+  /** Set answer and auto-advance */
   function setChoice(choiceIndex: number) {
     const updated = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
-    console.debug(`[ANSWERED] ${item.id} → ${choiceIndex}`, updated);
-
-    // Auto-next eller submit på siste
     setTimeout(() => {
-      if (idx < QUESTION_BANK.length - 1) {
-        setIdx((i) => Math.min(i + 1, QUESTION_BANK.length - 1));
-      } else {
-        console.debug("[AUTO-SUBMIT]");
-        submit(updated);
-      }
+      if (idx < QUESTION_BANK.length - 1) setIdx((i) => i + 1);
+      else submit(updated);
     }, 250);
   }
 
-  /** Oversetter nøkkel med fallback + viser key for debugging */
+  /** Translate text with debug key */
   function renderText(dict: any, key: string, fallback = "") {
     const text = t(dict, key, fallback);
     return (
       <span>
         {text}
-        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>
-          ({key})
-        </span>
+        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>({key})</span>
       </span>
     );
   }
 
-  /** Sender inn alle svarene */
+  /** Submit answers */
   async function submit(payload?: Record<string, any>) {
     const data = payload || answers;
-    console.debug("[SUBMIT] Sending answers:", data);
     try {
       setSubmitting(true);
       const res = await fetch("/api/submit", {
@@ -63,61 +55,58 @@ export default function TestPage() {
         body: JSON.stringify({ answers: data, lang }),
       });
       const json = await res.json();
-      console.debug("[SUBMIT RESPONSE]", json);
       if (!res.ok) throw new Error(json?.error || "submit_failed");
       window.location.href = `/result/${json.id}`;
     } catch (e: any) {
-      console.error("[SUBMIT ERROR]", e);
+      console.error(e);
       setError(e?.message || "submit_failed");
     } finally {
       setSubmitting(false);
     }
   }
 
-  /** Renderer spørsmål avhengig av type */
-  function renderQuestion(q: Question) {
-    const renderImage = (src?: string) => {
-      if (!src) return null;
-      return (
-        <div
+  /** Image renderer */
+  const renderImage = (src?: string, alt = "stimulus") => {
+    if (!src) return null;
+    return (
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+        <Image
+          src={src}
+          alt={alt}
+          width={512}
+          height={512}
           style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 12,
+            borderRadius: 8,
+            border: "1px solid #ddd",
+            background: "white",
+            objectFit: "contain",
+            maxWidth: "100%",
+            height: "auto",
           }}
-        >
-          <Image
-            src={src}
-            alt={q.id}
-            width={512}
-            height={512}
-            style={{
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              background: "white",
-              objectFit: "contain",
-              maxWidth: "100%",
-              height: "auto",
-            }}
-            onError={() => console.warn("[IMAGE MISSING]", q.id, src)}
-            priority
-          />
-        </div>
-      );
-    };
+          onError={() => console.warn("[IMAGE MISSING]", alt, src)}
+          priority
+        />
+      </div>
+    );
+  };
 
-    // 🔹 MEMORY-preview (viser bilde først)
-    if (q.recallAfterView && q.previewImage && showPreview) {
+  /** Render question content */
+  function renderQuestion(q: Question) {
+    // --- MEMORY PREVIEW ---
+    if (q.recallAfterView && q.previewImage && showPreview && !shownPreviews[q.id]) {
       return (
         <div style={{ textAlign: "center" }}>
-          {renderImage(q.previewImage)}
+          {renderImage(q.previewImage, q.id)}
           <p style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
             Memorize the image. You will be asked about it shortly.
           </p>
           <button
             className="btn"
             style={{ marginTop: 16 }}
-            onClick={() => setShowPreview(false)}
+            onClick={() => {
+              setShownPreviews((prev) => ({ ...prev, [q.id]: true }));
+              setShowPreview(false);
+            }}
           >
             Next →
           </button>
@@ -125,12 +114,12 @@ export default function TestPage() {
       );
     }
 
-    // 🔹 Multiple-choice / visual / matrix
+    // --- MULTIPLE / VISUAL / MATRIX ---
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {renderImage(q.image)}
-
+          {/* Only render image if not a recallAfterView preview */}
+          {!q.recallAfterView && renderImage(q.image, q.id)}
           {q.optionsKey.map((optKey: string, i: number) => (
             <label
               key={i}
@@ -156,10 +145,9 @@ export default function TestPage() {
       );
     }
 
-    // 🔹 Sequence-type (interaktiv rekkefølge)
+    // --- SEQUENCE ---
     if ("itemsKey" in q) {
       const selected = answers[q.id] || [];
-
       const handleSelect = (itemKey: string) => {
         setAnswers((prev) => {
           const current = prev[q.id] || [];
@@ -170,12 +158,11 @@ export default function TestPage() {
           return { ...prev, [q.id]: newOrder };
         });
       };
-
       const allSelected = selected.length === q.itemsKey.length;
 
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {renderImage(q.image)}
+          {!q.recallAfterView && renderImage(q.image, q.id)}
           {q.itemsKey.map((itmKey: string, i: number) => {
             const pos = selected.indexOf(itmKey);
             const selectedNum = pos >= 0 ? pos + 1 : null;
@@ -219,7 +206,6 @@ export default function TestPage() {
               </button>
             );
           })}
-
           {!allSelected && (
             <p className="muted text-sm">
               Tap items in correct order ({selected.length}/{q.itemsKey.length})
@@ -234,7 +220,7 @@ export default function TestPage() {
       );
     }
 
-    // 🔹 Recall-type (fritt minne, f.eks. etter bilde)
+    // --- RECALL ---
     if (q.kind === "recall") {
       return (
         <div style={{ display: "grid", gap: 8 }}>
@@ -256,32 +242,26 @@ export default function TestPage() {
       );
     }
 
-    // 🔹 fallback
+    // --- FALLBACK ---
     return (
       <div style={{ textAlign: "center" }}>
-        {renderImage(q.image)}
+        {renderImage((q as any).image, q.id)}
         <p>Unsupported question type</p>
       </div>
     );
   }
 
-  // Debug / reset preview ved spørsmålsskifte
+  // Reset preview flag on new question
   React.useEffect(() => {
-    console.debug(
-      `[STATE] Showing #${idx + 1}/${QUESTION_BANK.length} →`,
-      item?.id,
-      item?.category,
-      answers
-    );
-    setShowPreview(true); // 👈 reset for nye spørsmål
-  }, [idx, answers]);
+    setShowPreview(true);
+  }, [idx]);
 
   return (
     <div>
       <SiteHeader />
       <main style={{ marginTop: 16 }}>
         <div className="card">
-          {/* --- spørsmålstekst + fremdrift --- */}
+          {/* --- header --- */}
           <div
             style={{
               display: "flex",
@@ -298,7 +278,7 @@ export default function TestPage() {
             </div>
           </div>
 
-          {/* --- spørsmålsvisning med animasjon --- */}
+          {/* --- question content --- */}
           <AnimatePresence mode="wait">
             <motion.div
               key={item.id + (showPreview ? "-preview" : "-main")}
@@ -311,7 +291,7 @@ export default function TestPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* --- navigasjon --- */}
+          {/* --- navigation --- */}
           {!item.recallAfterView || !showPreview ? (
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button
@@ -325,9 +305,7 @@ export default function TestPage() {
               {idx < QUESTION_BANK.length - 1 ? (
                 <button
                   className="btn"
-                  onClick={() =>
-                    setIdx((i) => Math.min(QUESTION_BANK.length - 1, i + 1))
-                  }
+                  onClick={() => setIdx((i) => i + 1)}
                   disabled={answers[item.id] === undefined || submitting}
                 >
                   {t(dict, "cta-continue", "Continue")} →
@@ -347,11 +325,8 @@ export default function TestPage() {
             </div>
           ) : null}
 
-          {/* --- feilvisning --- */}
           {error && (
-            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>
-              {error}
-            </p>
+            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>{error}</p>
           )}
         </div>
       </main>
