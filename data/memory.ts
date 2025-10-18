@@ -1,4 +1,3 @@
-// /data/memory.ts
 import { CategoryId, Question } from "@/lib/types";
 
 /**
@@ -47,11 +46,10 @@ const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
     ...(recallAfterView
       ? {
           recallAfterView: true,
-          previewImage: `/assets/img/q/memory/mem-${n}.png`,
-          // ⚠️ Ikke legg til image her – det vises kun i preview
+          previewImage: `/assets/img/q/memory/mem-${n}.png`, // 👈 only preview
         }
       : {
-          image: `/assets/img/q/memory/mem-${n}.png`,
+          image: `/assets/img/q/memory/mem-${n}.png`, // 👈 shown with question
         }),
     optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
     correctIndex: (i + 1) % 4,
