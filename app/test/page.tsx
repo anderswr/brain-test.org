@@ -17,13 +17,13 @@ export default function TestPage() {
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // --- NEW: track which previews have already been shown ---
+  // Track previews that have already been shown (for recallAfterView)
   const [shownPreviews, setShownPreviews] = React.useState<Record<string, boolean>>({});
   const [showPreview, setShowPreview] = React.useState(true);
 
   const item = QUESTION_BANK[idx] as Question;
 
-  /** Set answer and auto-advance */
+  /** Setter valgt svar (brukes for MCQ og visual) + auto-next */
   function setChoice(choiceIndex: number) {
     const updated = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
@@ -33,7 +33,7 @@ export default function TestPage() {
     }, 250);
   }
 
-  /** Translate text with debug key */
+  /** Oversetter nøkkel med fallback + viser key for debugging */
   function renderText(dict: any, key: string, fallback = "") {
     const text = t(dict, key, fallback);
     return (
@@ -44,7 +44,7 @@ export default function TestPage() {
     );
   }
 
-  /** Submit answers */
+  /** Sender inn alle svarene */
   async function submit(payload?: Record<string, any>) {
     const data = payload || answers;
     try {
@@ -58,14 +58,14 @@ export default function TestPage() {
       if (!res.ok) throw new Error(json?.error || "submit_failed");
       window.location.href = `/result/${json.id}`;
     } catch (e: any) {
-      console.error(e);
+      console.error("[SUBMIT ERROR]", e);
       setError(e?.message || "submit_failed");
     } finally {
       setSubmitting(false);
     }
   }
 
-  /** Image renderer */
+  /** Renderer bilde */
   const renderImage = (src?: string, alt = "stimulus") => {
     if (!src) return null;
     return (
@@ -90,7 +90,7 @@ export default function TestPage() {
     );
   };
 
-  /** Render question content */
+  /** Renderer spørsmål avhengig av type */
   function renderQuestion(q: Question) {
     // --- MEMORY PREVIEW ---
     if (q.recallAfterView && q.previewImage && showPreview && !shownPreviews[q.id]) {
@@ -118,7 +118,6 @@ export default function TestPage() {
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {/* Only render image if not a recallAfterView preview */}
           {!q.recallAfterView && renderImage(q.image, q.id)}
           {q.optionsKey.map((optKey: string, i: number) => (
             <label
@@ -145,7 +144,7 @@ export default function TestPage() {
       );
     }
 
-    // --- SEQUENCE ---
+    // --- SEQUENCE-type ---
     if ("itemsKey" in q) {
       const selected = answers[q.id] || [];
       const handleSelect = (itemKey: string) => {
@@ -220,7 +219,7 @@ export default function TestPage() {
       );
     }
 
-    // --- RECALL ---
+    // --- RECALL-type ---
     if (q.kind === "recall") {
       return (
         <div style={{ display: "grid", gap: 8 }}>
@@ -242,16 +241,16 @@ export default function TestPage() {
       );
     }
 
-    // --- FALLBACK ---
+    // --- FALLBACK (type-safe fix) ---
     return (
       <div style={{ textAlign: "center" }}>
-        {renderImage((q as any).image, q.id)}
+        {renderImage((q as any)?.image, (q as any)?.id ?? "unknown")}
         <p>Unsupported question type</p>
       </div>
     );
   }
 
-  // Reset preview flag on new question
+  // Reset preview when changing question
   React.useEffect(() => {
     setShowPreview(true);
   }, [idx]);
@@ -261,7 +260,7 @@ export default function TestPage() {
       <SiteHeader />
       <main style={{ marginTop: 16 }}>
         <div className="card">
-          {/* --- header --- */}
+          {/* --- spørsmålstekst + fremdrift --- */}
           <div
             style={{
               display: "flex",
@@ -278,7 +277,7 @@ export default function TestPage() {
             </div>
           </div>
 
-          {/* --- question content --- */}
+          {/* --- spørsmålsvisning med animasjon --- */}
           <AnimatePresence mode="wait">
             <motion.div
               key={item.id + (showPreview ? "-preview" : "-main")}
@@ -291,7 +290,7 @@ export default function TestPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* --- navigation --- */}
+          {/* --- navigasjon --- */}
           {!item.recallAfterView || !showPreview ? (
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button
