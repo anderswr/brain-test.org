@@ -46,7 +46,7 @@ const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
     correctIndex: (i + 1) % 4,
     ...(recallAfterView && {
       recallAfterView: true,
-      previewImage: `/assets/img/q/memory/stim_${n}.png`,
+      previewImage: `/assets/img/q/memory/mem-${n}.png`,
     }),
   };
 });
@@ -71,12 +71,12 @@ const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
     kind: "visual" as const,
     category: CategoryId.Memory,
     textKey: id,
-    image: `/assets/img/q/memory/mem_${n}.png`,
+    image: `/assets/img/q/memory/mem-${n}.png`,
     optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
     correctIndex: (i + 1) % 4,
     ...(recallAfterView && {
       recallAfterView: true,
-      previewImage: `/assets/img/q/memory/stim_${n}.png`,
+      previewImage: `/assets/img/q/memory/mem-${n}.png`,
     }),
   };
 });
@@ -95,7 +95,7 @@ const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => {
     correctIndex: (i + 2) % 4,
     ...(recallAfterView && {
       recallAfterView: true,
-      previewImage: `/assets/img/q/memory/stim_${n}.png`,
+      previewImage: `/assets/img/q/memory/mem-${n}.png`,
     }),
   };
 });
@@ -116,7 +116,7 @@ const seqQs: Question[] = [
     ],
     correctIndex: 0, // Cat
     recallAfterView: true,
-    previewImage: "/assets/img/q/memory/stim_33.png",
+    previewImage: "/assets/img/q/memory/mem-33.png",
   },
 
   // 34 → recallAfterView multiple
@@ -133,7 +133,7 @@ const seqQs: Question[] = [
     ],
     correctIndex: 2,
     recallAfterView: true,
-    previewImage: "/assets/img/q/memory/stim_34.png",
+    previewImage: "/assets/img/q/memory/mem-34.png",
   },
 
   // 35 → sequence
