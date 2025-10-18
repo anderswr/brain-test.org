@@ -48,7 +48,7 @@ export interface BaseQuestion {
   previewImage?: string;
 
   /**
-   * If true, the question first shows a preview/stimulus (e.g. previewImage),
+   * If true, the question first shows a preview/stimulus (e.g., previewImage),
    * then later the actual question — used for delayed recall.
    */
   recallAfterView?: boolean;
@@ -74,7 +74,8 @@ export interface MatrixQuestion extends BaseQuestion, ChoiceLike {
 /** VISUAL: Image-based rotation/matching */
 export interface VisualQuestion extends BaseQuestion, ChoiceLike {
   kind: "visual";
-  image: string;
+  /** Optional for recallAfterView items that use only previewImage */
+  image?: string;
 }
 
 /** SEQUENCE: Order items correctly */
