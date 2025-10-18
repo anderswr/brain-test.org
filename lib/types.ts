@@ -39,6 +39,12 @@ export interface BaseQuestion {
   timeLimitSec?: number;      // optional soft limit
 
   /**
+   * Optional stimulus image shown directly in the question UI.
+   * For visual, matrix and memory categories this is typically set.
+   */
+  image?: string;
+
+  /**
    * Optional stimulus shown BEFORE the actual question (memory “what did you just see?”)
    * If provided, UI can render this image first and show a “Next” button to reveal the question.
    */
