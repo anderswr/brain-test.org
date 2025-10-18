@@ -12,30 +12,13 @@ const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
   const n = String(i + 1).padStart(2, "0");
   const id = `q-memory-${n}`;
 
-  // Mark recall-after-view questions
-  const recallAfterView = [
-    "05",
-    "06",
-    "07",
-    "08",
-    "09",
-    "10",
-    "15",
-    "16",
-    "17",
-    "18",
-    "19",
-    "20",
-    "21",
-    "22",
-    "23",
-    "24",
-    "25",
-    "26",
-    "27",
-    "33",
-    "34",
-  ].includes(n);
+  const recallAfterViewList = [
+    "05", "06", "07", "08", "09", "10",
+    "15", "16", "17", "18", "19", "20",
+    "21", "22", "23", "24", "25", "26",
+    "27", "33", "34"
+  ];
+  const recallAfterView = recallAfterViewList.includes(n);
 
   return {
     id,
@@ -55,29 +38,23 @@ const baseQs: Question[] = Array.from({ length: 14 }, (_, i) => {
 const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
   const n = String(15 + i).padStart(2, "0");
   const id = `q-memory-${n}`;
-  const recallAfterView = [
-    "15",
-    "16",
-    "17",
-    "18",
-    "19",
-    "20",
-    "21",
-    "22",
-    "23",
-  ].includes(n);
+  const recallAfterView = ["15","16","17","18","19","20","21","22","23"].includes(n);
   return {
     id,
     kind: "visual" as const,
     category: CategoryId.Memory,
     textKey: id,
-    image: `/assets/img/q/memory/mem-${n}.png`,
+    ...(recallAfterView
+      ? {
+          recallAfterView: true,
+          previewImage: `/assets/img/q/memory/mem-${n}.png`,
+          // ⚠️ Ikke legg til image her – det vises kun i preview
+        }
+      : {
+          image: `/assets/img/q/memory/mem-${n}.png`,
+        }),
     optionsKey: [`${id}-a`, `${id}-b`, `${id}-c`, `${id}-d`],
     correctIndex: (i + 1) % 4,
-    ...(recallAfterView && {
-      recallAfterView: true,
-      previewImage: `/assets/img/q/memory/mem-${n}.png`,
-    }),
   };
 });
 
@@ -85,7 +62,7 @@ const visualQs: Question[] = Array.from({ length: 9 }, (_, i) => {
 const multiQs: Question[] = Array.from({ length: 9 }, (_, i) => {
   const n = String(24 + i).padStart(2, "0");
   const id = `q-memory-${n}`;
-  const recallAfterView = ["24", "25", "26", "27", "33", "34"].includes(n);
+  const recallAfterView = ["24","25","26","27","33","34"].includes(n);
   return {
     id,
     kind: "multiple" as const,
@@ -114,7 +91,7 @@ const seqQs: Question[] = [
       "q-memory-33-c",
       "q-memory-33-d",
     ],
-    correctIndex: 0, // Cat
+    correctIndex: 0,
     recallAfterView: true,
     previewImage: "/assets/img/q/memory/mem-33.png",
   },
@@ -152,7 +129,7 @@ const seqQs: Question[] = [
     partialCredit: true,
   },
 
-  // 36 → multiple
+  // 36 → regular multiple
   {
     id: "q-memory-36",
     kind: "multiple",
