@@ -10,7 +10,6 @@ import { t } from "@/lib/i18n";
 import { CategoryId, Question } from "@/lib/types";
 import { CATEGORY_INDEX } from "@/data/question_index";
 
-/* ------------------ Helper: dynamic sampling per session ------------------ */
 function sample<T>(arr: T[], n: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(n, shuffled.length));
@@ -31,11 +30,8 @@ function getRandomQuestionSet(): Question[] {
   ][]) {
     all.push(...sample(questions, perCat[cat]));
   }
-  // shuffle entire mix
   return all.sort(() => Math.random() - 0.5);
 }
-
-/* --------------------------- Component --------------------------- */
 
 export default function TestPage() {
   const { dict, lang } = useI18n();
@@ -44,17 +40,19 @@ export default function TestPage() {
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [showPreview, setShowPreview] = React.useState(true);
-
-  // ✅ Runtime-randomized question set, stable per session
   const QUESTION_BANK = React.useMemo(() => getRandomQuestionSet(), []);
+
+  // 🌙 detect dark mode once
+  const isDarkMode = React.useMemo(
+    () => window.matchMedia?.("(prefers-color-scheme: dark)").matches,
+    []
+  );
 
   const item = QUESTION_BANK[idx] as Question;
 
   function setChoice(choiceIndex: number) {
     const updated = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
-    console.debug(`[ANSWERED] ${item.id} → ${choiceIndex}`, updated);
-
     setTimeout(() => {
       if (idx < QUESTION_BANK.length - 1) {
         setIdx((i) => i + 1);
@@ -66,7 +64,6 @@ export default function TestPage() {
 
   async function submit(payload?: Record<string, any>) {
     const data = payload || answers;
-    console.debug("[SUBMIT] Sending answers:", data);
     try {
       setSubmitting(true);
       const res = await fetch("/api/submit", {
@@ -78,37 +75,21 @@ export default function TestPage() {
       if (!res.ok) throw new Error(json?.error || "submit_failed");
       window.location.href = `/result/${json.id}`;
     } catch (e: any) {
-      console.error("[SUBMIT ERROR]", e);
       setError(e?.message || "submit_failed");
     } finally {
       setSubmitting(false);
     }
   }
 
-  /* ---------- UI Rendering helpers ---------- */
-
   const renderText = (dict: any, key: string, fallback = "") => {
     const text = t(dict, key, fallback);
-    return (
-      <span>
-        {text}
-        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>
-          ({key})
-        </span>
-      </span>
-    );
+    return <span>{text}</span>;
   };
 
   const renderImage = (src?: string, id?: string) => {
     if (!src) return null;
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: 12,
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
         <Image
           src={src}
           alt={id || "img"}
@@ -130,7 +111,6 @@ export default function TestPage() {
   };
 
   const renderQuestion = (q: Question) => {
-    // MEMORY preview
     if (q.recallAfterView && q.previewImage && showPreview) {
       return (
         <div style={{ textAlign: "center" }}>
@@ -138,18 +118,13 @@ export default function TestPage() {
           <p style={{ marginTop: 8, fontSize: 14, color: "#666" }}>
             Memorize the image. You will be asked about it shortly.
           </p>
-          <button
-            className="btn"
-            style={{ marginTop: 16 }}
-            onClick={() => setShowPreview(false)}
-          >
+          <button className="btn" style={{ marginTop: 16 }} onClick={() => setShowPreview(false)}>
             Next →
           </button>
         </div>
       );
     }
 
-    // MULTIPLE / VISUAL / MATRIX
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
@@ -164,6 +139,7 @@ export default function TestPage() {
                 gap: 8,
                 alignItems: "center",
                 cursor: "pointer",
+                color: isDarkMode ? "#f5f5f5" : "#111", // 🌙 FIX
               }}
             >
               <input
@@ -179,7 +155,6 @@ export default function TestPage() {
       );
     }
 
-    // SEQUENCE
     if ("itemsKey" in q) {
       const selected = answers[q.id] || [];
       const handleSelect = (itemKey: string) => {
@@ -208,15 +183,14 @@ export default function TestPage() {
                 style={{
                   padding: 12,
                   textAlign: "left",
-                  border:
-                    pos >= 0 ? "2px solid var(--accent)" : "1px solid #ccc",
-                  background:
-                    pos >= 0 ? "rgba(0,128,255,0.1)" : "transparent",
+                  border: pos >= 0 ? "2px solid var(--accent)" : "1px solid #ccc",
+                  background: pos >= 0 ? "rgba(0,128,255,0.1)" : "transparent",
                   borderRadius: 8,
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
                   cursor: "pointer",
+                  color: isDarkMode ? "#f5f5f5" : "#111", // 🌙 FIX
                 }}
               >
                 {renderText(dict, itmKey, `Missing: ${itmKey}`)}
@@ -257,32 +231,16 @@ export default function TestPage() {
     );
   };
 
-  /* ---------- Lifecycle ---------- */
   React.useEffect(() => {
-    console.debug(
-      `[STATE] Showing #${idx + 1}/${QUESTION_BANK.length} →`,
-      item?.id,
-      item?.category,
-      answers
-    );
     setShowPreview(true);
   }, [idx]);
 
-  /* ---------- Render ---------- */
   return (
     <div>
       <SiteHeader />
       <main style={{ marginTop: 16 }}>
         <div className="card">
-          {/* Header */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 12,
-            }}
-          >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <div style={{ fontWeight: 600 }}>
               {renderText(dict, item.textKey, `Missing: ${item.textKey}`)}
             </div>
@@ -291,7 +249,6 @@ export default function TestPage() {
             </div>
           </div>
 
-          {/* Animated question */}
           <AnimatePresence mode="wait">
             <motion.div
               key={item.id + (showPreview ? "-preview" : "-main")}
@@ -304,14 +261,9 @@ export default function TestPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation */}
           {!item.recallAfterView || !showPreview ? (
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <button
-                className="btn"
-                onClick={() => setIdx((i) => Math.max(0, i - 1))}
-                disabled={idx === 0 || submitting}
-              >
+              <button className="btn" onClick={() => setIdx((i) => Math.max(0, i - 1))} disabled={idx === 0 || submitting}>
                 ← {t(dict, "cta-back", "Back")}
               </button>
               {idx < QUESTION_BANK.length - 1 ? (
@@ -337,11 +289,7 @@ export default function TestPage() {
             </div>
           ) : null}
 
-          {error && (
-            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>
-              {error}
-            </p>
-          )}
+          {error && <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>{error}</p>}
         </div>
       </main>
       <SiteFooter />
