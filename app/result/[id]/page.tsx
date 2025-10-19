@@ -78,7 +78,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
 
   const categories = useMemo(() => {
     const entries = Object.entries(normalized?.perCategory || {}) as [CategoryId, { percent: number }][];
-    // Sorter fra høyest til lavest prosent
+    // Sort fra høyest til lavest prosent
     return entries.sort((a, b) => b[1].percent - a[1].percent);
   }, [normalized]);
 
@@ -114,13 +114,12 @@ export default function ResultPage({ params }: { params: { id: string } }) {
   const { iq, ci } = normalized;
   const bestCat = categories[0]?.[0];
 
-  // Dynamiske fargetemaer (justert for både light og dark)
-  const catColors: Record<CategoryId, string> = {
-    reasoning: "hsl(210, 100%, 65%)", // blå
-    math: "hsl(45, 100%, 60%)",       // gul
-    verbal: "hsl(330, 80%, 65%)",     // rosa/lilla
-    spatial: "hsl(180, 70%, 55%)",    // turkis
-    memory: "hsl(120, 70%, 50%)",     // grønn
+  // 🎨 Dynamiske farger basert på prestasjon
+  const getColorForPercent = (p: number): string => {
+    if (p >= 70) return "#22c55e"; // green
+    if (p >= 50) return "#3b82f6"; // blue
+    if (p >= 30) return "#fbbf24"; // yellow
+    return "#ef4444"; // red
   };
 
   return (
@@ -130,7 +129,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
         {/* HEADER */}
         <article className="panel head p-6 score-hero">
           <div className="score-hero__left">
-            <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
+            <h1>{t(dict, "ui-result-title", "Your IQ Estimate")}</h1>
 
             <div className="row" style={{ gap: 8, alignItems: "center" }}>
               <code className="code-badge">{data?.id}</code>
@@ -146,7 +145,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
               {t(
                 dict,
                 "ui-result-disclaimer_iq",
-                "Your score reflects your performance across five domains: reasoning, math, verbal, spatial, and memory."
+                "Your result reflects performance across five cognitive domains: reasoning, math, verbal, spatial, and memory. It is scored using a normalized model with mean = 100 and standard deviation = 15. Scores are indicative, not diagnostic."
               )}
             </p>
 
@@ -154,7 +153,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
               <p
                 className="mt-4 text-sm"
                 style={{
-                  color: catColors[bestCat],
+                  color: getColorForPercent(categories[0][1].percent),
                   fontWeight: 500,
                 }}
               >
@@ -182,7 +181,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
         {categories.length > 0 && (
           <section className="grid-cards mt-6">
             {categories.map(([cat, val]) => {
-              const color = catColors[cat];
+              const color = getColorForPercent(val.percent);
               return (
                 <article
                   key={cat}
@@ -190,22 +189,34 @@ export default function ResultPage({ params }: { params: { id: string } }) {
                   style={{
                     border: `1px solid ${color}33`,
                     background: `linear-gradient(145deg, ${color}10, transparent)`,
+                    borderRadius: 12,
+                    padding: "1rem",
                   }}
                 >
-                  <div className="cat-card__head">
+                  <div
+                    className="cat-card__head"
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <span
                       className="pill"
                       style={{
                         background: color,
                         color: "white",
                         fontWeight: 600,
+                        padding: "2px 8px",
+                        borderRadius: 12,
+                        fontSize: 13,
                       }}
                     >
                       {t(dict, `category-${cat}-name`, cat)}
                     </span>
                     <strong
                       className="cat-card__score"
-                      style={{ color }}
+                      style={{ color, fontSize: 18, fontWeight: 700 }}
                     >
                       {val.percent.toFixed(0)}%
                     </strong>
@@ -215,6 +226,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
                     style={{
                       color: "var(--text-muted)",
                       lineHeight: 1.4,
+                      marginTop: 6,
                     }}
                   >
                     {t(dict, `category-${cat}-desc`, "")}
@@ -251,7 +263,7 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
 
   const ranges = [
     { from: 55, to: 69, label: "Below 70 – Very Low", color: "#ef4444" },
-    { from: 70, to: 84, label: "70–84 – Below Average", color: "#f59e0b" },
+    { from: 70, to: 84, label: "70–84 – Below Average", color: "#fbbf24" },
     { from: 85, to: 114, label: "85–114 – Average", color: "#22c55e" },
     { from: 115, to: 129, label: "115–129 – Above Average", color: "#3b82f6" },
     { from: 130, to: 145, label: "130+ – Gifted", color: "#a855f7" },
@@ -280,13 +292,11 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
               y2={maxY}
               fill={r.color}
               fillOpacity={0.08}
-              strokeOpacity={0}
               label={{
                 value: r.label,
                 position: "insideTop",
                 fontSize: 11,
                 fill: r.color,
-                offset: 4,
               }}
             />
           ))}
@@ -317,18 +327,8 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
               fontWeight: 600,
             }}
           />
-          <ReferenceLine
-            x={ci[0]}
-            stroke="#ef4444"
-            strokeDasharray="4 4"
-            strokeOpacity={0.7}
-          />
-          <ReferenceLine
-            x={ci[1]}
-            stroke="#ef4444"
-            strokeDasharray="4 4"
-            strokeOpacity={0.7}
-          />
+          <ReferenceLine x={ci[0]} stroke="#ef4444" strokeDasharray="4 4" strokeOpacity={0.7} />
+          <ReferenceLine x={ci[1]} stroke="#ef4444" strokeDasharray="4 4" strokeOpacity={0.7} />
         </AreaChart>
       </ResponsiveContainer>
     </div>
