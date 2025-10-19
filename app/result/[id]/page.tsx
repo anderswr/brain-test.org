@@ -1,4 +1,3 @@
-// app/result/[id]/page.tsx
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
@@ -62,7 +61,6 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     if (!r) return null;
 
     if ("iqEstimate" in r && "categoryScores" in r) {
-      // new structure
       const iq = r.iqEstimate;
       const ci: [number, number] = r.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
       const perCategory = Object.fromEntries(
@@ -72,17 +70,17 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     }
 
     if ("iq" in r && "perCategory" in r) {
-      // legacy fallback
       return { iq: r.iq, ci: r.ci ?? [90, 110], perCategory: r.perCategory };
     }
 
     return null;
   }, [data]);
 
-  const categories = useMemo(
-    () => Object.entries(normalized?.perCategory || {}) as [CategoryId, { percent: number }][],
-    [normalized]
-  );
+  const categories = useMemo(() => {
+    const entries = Object.entries(normalized?.perCategory || {}) as [CategoryId, { percent: number }][];
+    // Sorter fra høyest til lavest prosent
+    return entries.sort((a, b) => b[1].percent - a[1].percent);
+  }, [normalized]);
 
   if (notFound) {
     return (
@@ -114,6 +112,16 @@ export default function ResultPage({ params }: { params: { id: string } }) {
   }
 
   const { iq, ci } = normalized;
+  const bestCat = categories[0]?.[0];
+
+  // Dynamiske fargetemaer (justert for både light og dark)
+  const catColors: Record<CategoryId, string> = {
+    reasoning: "hsl(210, 100%, 65%)", // blå
+    math: "hsl(45, 100%, 60%)",       // gul
+    verbal: "hsl(330, 80%, 65%)",     // rosa/lilla
+    spatial: "hsl(180, 70%, 55%)",    // turkis
+    memory: "hsl(120, 70%, 50%)",     // grønn
+  };
 
   return (
     <div className="app-shell">
@@ -123,20 +131,42 @@ export default function ResultPage({ params }: { params: { id: string } }) {
         <article className="panel head p-6 score-hero">
           <div className="score-hero__left">
             <h1>{t(dict, "ui-result-title", "Your IQ Result")}</h1>
+
             <div className="row" style={{ gap: 8, alignItems: "center" }}>
               <code className="code-badge">{data?.id}</code>
-              <button className="btn" onClick={() => navigator.clipboard.writeText(data?.id || "")}>
+              <button
+                className="btn"
+                onClick={() => navigator.clipboard.writeText(data?.id || "")}
+              >
                 {t(dict, "ui-result-copy_id", "Copy ID")}
               </button>
             </div>
+
             <p className="muted mt-3">
               {t(
                 dict,
                 "ui-result-disclaimer_iq",
-                "This IQ estimate is calculated from your responses using a normalized z-score across five cognitive domains."
+                "Your score reflects your performance across five domains: reasoning, math, verbal, spatial, and memory."
               )}
             </p>
+
+            {bestCat && (
+              <p
+                className="mt-4 text-sm"
+                style={{
+                  color: catColors[bestCat],
+                  fontWeight: 500,
+                }}
+              >
+                🌟 You performed best in{" "}
+                <strong>
+                  {t(dict, `category-${bestCat}-name`, bestCat.toUpperCase())}
+                </strong>
+                .
+              </p>
+            )}
           </div>
+
           <div className="score-hero__right">
             <div className="score-ring" data-color="blue">
               <div className="score-ring__value">{Math.round(iq)}</div>
@@ -151,21 +181,47 @@ export default function ResultPage({ params }: { params: { id: string } }) {
         {/* CATEGORY SCORES */}
         {categories.length > 0 && (
           <section className="grid-cards mt-6">
-            {categories.map(([cat, val]) => (
-              <article key={cat} className="cat-card" data-color="blue">
-                <div className="cat-card__head">
-                  <span className="pill">
-                    {t(dict, `category-${cat}-name`, cat)}
-                  </span>
-                  <strong className="cat-card__score">
-                    {val.percent.toFixed(0)}%
-                  </strong>
-                </div>
-                <p className="muted">
-                  {t(dict, `category-${cat}-desc`, "")}
-                </p>
-              </article>
-            ))}
+            {categories.map(([cat, val]) => {
+              const color = catColors[cat];
+              return (
+                <article
+                  key={cat}
+                  className="cat-card transition-colors"
+                  style={{
+                    border: `1px solid ${color}33`,
+                    background: `linear-gradient(145deg, ${color}10, transparent)`,
+                  }}
+                >
+                  <div className="cat-card__head">
+                    <span
+                      className="pill"
+                      style={{
+                        background: color,
+                        color: "white",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {t(dict, `category-${cat}-name`, cat)}
+                    </span>
+                    <strong
+                      className="cat-card__score"
+                      style={{ color }}
+                    >
+                      {val.percent.toFixed(0)}%
+                    </strong>
+                  </div>
+                  <p
+                    className="muted"
+                    style={{
+                      color: "var(--text-muted)",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {t(dict, `category-${cat}-desc`, "")}
+                  </p>
+                </article>
+              );
+            })}
           </section>
         )}
 
@@ -194,8 +250,8 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
   const maxY = Math.max(...points.map((p) => p.y));
 
   const ranges = [
-    { from: 55, to: 69, label: "Below 70 – Very Low", color: "#f87171" },
-    { from: 70, to: 84, label: "70–84 – Below Average", color: "#fbbf24" },
+    { from: 55, to: 69, label: "Below 70 – Very Low", color: "#ef4444" },
+    { from: 70, to: 84, label: "70–84 – Below Average", color: "#f59e0b" },
     { from: 85, to: 114, label: "85–114 – Average", color: "#22c55e" },
     { from: 115, to: 129, label: "115–129 – Above Average", color: "#3b82f6" },
     { from: 130, to: 145, label: "130+ – Gifted", color: "#a855f7" },
@@ -213,7 +269,7 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
           </defs>
           <XAxis dataKey="x" type="number" domain={[55, 145]} tickCount={10} />
           <YAxis hide domain={[0, maxY]} />
-          <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+          <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
 
           {ranges.map((r) => (
             <ReferenceArea

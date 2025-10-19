@@ -7,8 +7,35 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
-import { QUESTION_BANK } from "@/data/question_index";
-import { Question } from "@/lib/types";
+import { CategoryId, Question } from "@/lib/types";
+import { CATEGORY_INDEX } from "@/data/question_index";
+
+/* ------------------ Helper: dynamic sampling per session ------------------ */
+function sample<T>(arr: T[], n: number): T[] {
+  const shuffled = [...arr].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(n, shuffled.length));
+}
+
+function getRandomQuestionSet(): Question[] {
+  const perCat = {
+    [CategoryId.Reasoning]: 8,
+    [CategoryId.Math]: 8,
+    [CategoryId.Verbal]: 8,
+    [CategoryId.Spatial]: 8,
+    [CategoryId.Memory]: 8,
+  };
+  const all: Question[] = [];
+  for (const [cat, questions] of Object.entries(CATEGORY_INDEX) as [
+    CategoryId,
+    Question[]
+  ][]) {
+    all.push(...sample(questions, perCat[cat]));
+  }
+  // shuffle entire mix
+  return all.sort(() => Math.random() - 0.5);
+}
+
+/* --------------------------- Component --------------------------- */
 
 export default function TestPage() {
   const { dict, lang } = useI18n();
@@ -16,37 +43,30 @@ export default function TestPage() {
   const [answers, setAnswers] = React.useState<Record<string, any>>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-
-  // Track previews that have already been shown (for recallAfterView)
-  const [shownPreviews, setShownPreviews] = React.useState<Record<string, boolean>>({});
   const [showPreview, setShowPreview] = React.useState(true);
+
+  // ✅ Runtime-randomized question set, stable per session
+  const QUESTION_BANK = React.useMemo(() => getRandomQuestionSet(), []);
 
   const item = QUESTION_BANK[idx] as Question;
 
-  /** Setter valgt svar (brukes for MCQ og visual) + auto-next */
   function setChoice(choiceIndex: number) {
     const updated = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
+    console.debug(`[ANSWERED] ${item.id} → ${choiceIndex}`, updated);
+
     setTimeout(() => {
-      if (idx < QUESTION_BANK.length - 1) setIdx((i) => i + 1);
-      else submit(updated);
+      if (idx < QUESTION_BANK.length - 1) {
+        setIdx((i) => i + 1);
+      } else {
+        submit(updated);
+      }
     }, 250);
   }
 
-  /** Oversetter nøkkel med fallback + viser key for debugging */
-  function renderText(dict: any, key: string, fallback = "") {
-    const text = t(dict, key, fallback);
-    return (
-      <span>
-        {text}
-        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>({key})</span>
-      </span>
-    );
-  }
-
-  /** Sender inn alle svarene */
   async function submit(payload?: Record<string, any>) {
     const data = payload || answers;
+    console.debug("[SUBMIT] Sending answers:", data);
     try {
       setSubmitting(true);
       const res = await fetch("/api/submit", {
@@ -65,14 +85,33 @@ export default function TestPage() {
     }
   }
 
-  /** Renderer bilde */
-  const renderImage = (src?: string, alt = "stimulus") => {
+  /* ---------- UI Rendering helpers ---------- */
+
+  const renderText = (dict: any, key: string, fallback = "") => {
+    const text = t(dict, key, fallback);
+    return (
+      <span>
+        {text}
+        <span style={{ color: "#999", fontSize: "0.8em", marginLeft: 6 }}>
+          ({key})
+        </span>
+      </span>
+    );
+  };
+
+  const renderImage = (src?: string, id?: string) => {
     if (!src) return null;
     return (
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginBottom: 12,
+        }}
+      >
         <Image
           src={src}
-          alt={alt}
+          alt={id || "img"}
           width={512}
           height={512}
           style={{
@@ -83,17 +122,16 @@ export default function TestPage() {
             maxWidth: "100%",
             height: "auto",
           }}
-          onError={() => console.warn("[IMAGE MISSING]", alt, src)}
+          onError={() => console.warn("[IMAGE MISSING]", id, src)}
           priority
         />
       </div>
     );
   };
 
-  /** Renderer spørsmål avhengig av type */
-  function renderQuestion(q: Question) {
-    // --- MEMORY PREVIEW ---
-    if (q.recallAfterView && q.previewImage && showPreview && !shownPreviews[q.id]) {
+  const renderQuestion = (q: Question) => {
+    // MEMORY preview
+    if (q.recallAfterView && q.previewImage && showPreview) {
       return (
         <div style={{ textAlign: "center" }}>
           {renderImage(q.previewImage, q.id)}
@@ -103,10 +141,7 @@ export default function TestPage() {
           <button
             className="btn"
             style={{ marginTop: 16 }}
-            onClick={() => {
-              setShownPreviews((prev) => ({ ...prev, [q.id]: true }));
-              setShowPreview(false);
-            }}
+            onClick={() => setShowPreview(false)}
           >
             Next →
           </button>
@@ -114,11 +149,11 @@ export default function TestPage() {
       );
     }
 
-    // --- MULTIPLE / VISUAL / MATRIX ---
+    // MULTIPLE / VISUAL / MATRIX
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {!q.recallAfterView && renderImage(q.image, q.id)}
+          {renderImage(q.image, q.id)}
           {q.optionsKey.map((optKey: string, i: number) => (
             <label
               key={i}
@@ -144,7 +179,7 @@ export default function TestPage() {
       );
     }
 
-    // --- SEQUENCE-type ---
+    // SEQUENCE
     if ("itemsKey" in q) {
       const selected = answers[q.id] || [];
       const handleSelect = (itemKey: string) => {
@@ -161,7 +196,7 @@ export default function TestPage() {
 
       return (
         <div style={{ display: "grid", gap: 8 }}>
-          {!q.recallAfterView && renderImage(q.image, q.id)}
+          {renderImage(q.image, q.id)}
           {q.itemsKey.map((itmKey: string, i: number) => {
             const pos = selected.indexOf(itmKey);
             const selectedNum = pos >= 0 ? pos + 1 : null;
@@ -210,57 +245,36 @@ export default function TestPage() {
               Tap items in correct order ({selected.length}/{q.itemsKey.length})
             </p>
           )}
-          {allSelected && (
-            <p className="text-sm" style={{ color: "green" }}>
-              ✅ Sequence complete
-            </p>
-          )}
         </div>
       );
     }
 
-    // --- RECALL-type ---
-    if (q.kind === "recall") {
-      return (
-        <div style={{ display: "grid", gap: 8 }}>
-          <textarea
-            placeholder="Type what you remember..."
-            rows={3}
-            style={{
-              padding: 8,
-              borderRadius: 8,
-              border: "1px solid #ccc",
-              resize: "none",
-            }}
-            value={(answers[q.id] as string) || ""}
-            onChange={(e) =>
-              setAnswers({ ...answers, [q.id]: e.target.value.trim() })
-            }
-          />
-        </div>
-      );
-    }
-
-    // --- FALLBACK (type-safe fix) ---
     return (
       <div style={{ textAlign: "center" }}>
-        {renderImage((q as any)?.image, (q as any)?.id ?? "unknown")}
+        {renderImage(q.image, q.id)}
         <p>Unsupported question type</p>
       </div>
     );
-  }
+  };
 
-  // Reset preview when changing question
+  /* ---------- Lifecycle ---------- */
   React.useEffect(() => {
+    console.debug(
+      `[STATE] Showing #${idx + 1}/${QUESTION_BANK.length} →`,
+      item?.id,
+      item?.category,
+      answers
+    );
     setShowPreview(true);
   }, [idx]);
 
+  /* ---------- Render ---------- */
   return (
     <div>
       <SiteHeader />
       <main style={{ marginTop: 16 }}>
         <div className="card">
-          {/* --- spørsmålstekst + fremdrift --- */}
+          {/* Header */}
           <div
             style={{
               display: "flex",
@@ -277,7 +291,7 @@ export default function TestPage() {
             </div>
           </div>
 
-          {/* --- spørsmålsvisning med animasjon --- */}
+          {/* Animated question */}
           <AnimatePresence mode="wait">
             <motion.div
               key={item.id + (showPreview ? "-preview" : "-main")}
@@ -290,7 +304,7 @@ export default function TestPage() {
             </motion.div>
           </AnimatePresence>
 
-          {/* --- navigasjon --- */}
+          {/* Navigation */}
           {!item.recallAfterView || !showPreview ? (
             <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
               <button
@@ -300,7 +314,6 @@ export default function TestPage() {
               >
                 ← {t(dict, "cta-back", "Back")}
               </button>
-
               {idx < QUESTION_BANK.length - 1 ? (
                 <button
                   className="btn"
@@ -325,7 +338,9 @@ export default function TestPage() {
           ) : null}
 
           {error && (
-            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>{error}</p>
+            <p style={{ color: "#f87171", marginTop: 8, fontSize: 14 }}>
+              {error}
+            </p>
           )}
         </div>
       </main>

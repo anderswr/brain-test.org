@@ -1,4 +1,3 @@
-// /lib/scoring_iq.ts
 import { CATEGORY_INDEX } from "@/data/question_index";
 import {
   AnswerMap,
@@ -31,7 +30,7 @@ export function computeResult(answers: AnswerMap): ComputedResult {
   const version = BANK_VERSION;
   const perQuestion: PerQuestionScore[] = [];
 
-  // prepare totals
+  // initialize totals explicitly
   const categoryTotals: Record<CategoryId, { score: number; max: number }> = {
     reasoning: { score: 0, max: 0 },
     math: { score: 0, max: 0 },
@@ -40,18 +39,17 @@ export function computeResult(answers: AnswerMap): ComputedResult {
     memory: { score: 0, max: 0 },
   };
 
-  // --- Iterate through all categories and questions ---
-  for (const [cat, questions] of Object.entries(CATEGORY_INDEX) as [
-    CategoryId,
-    Question[]
-  ][]) {
+  // --- Iterate through all categories ---
+  for (const catId of Object.values(CategoryId)) {
+    const questions = CATEGORY_INDEX[catId];
+    if (!questions) continue;
+
     for (const q of questions) {
       const ans = answers[q.id];
       if (ans == null) continue;
 
       let score01 = 0;
 
-      // MULTIPLE / MATRIX / VISUAL
       if (isMultiple(q) || isMatrix(q) || isVisual(q)) {
         if (typeof ans === "number") {
           score01 = ans === q.correctIndex ? 1 : 0;
@@ -59,10 +57,7 @@ export function computeResult(answers: AnswerMap): ComputedResult {
           const correctKey = q.optionsKey[q.correctIndex];
           score01 = ans === correctKey ? 1 : 0;
         }
-      }
-
-      // SEQUENCE
-      else if (isSequence(q) && Array.isArray(ans)) {
+      } else if (isSequence(q) && Array.isArray(ans)) {
         const correct = q.answerSequence;
         const userSeq = ans.map((v) =>
           typeof v === "number" ? v : parseInt(String(v), 10)
@@ -89,8 +84,9 @@ export function computeResult(answers: AnswerMap): ComputedResult {
         score01,
       });
 
-      categoryTotals[cat].score += score01 * weight;
-      categoryTotals[cat].max += weight;
+      // ✅ ensure correct keying by category enum
+      categoryTotals[q.category].score += score01 * weight;
+      categoryTotals[q.category].max += weight;
     }
   }
 
@@ -103,15 +99,17 @@ export function computeResult(answers: AnswerMap): ComputedResult {
     memory: percent(categoryTotals.memory),
   };
 
-  const totalPercent = average(Object.values(categoryScores));
+  const totalPercent = weightedAverage(categoryTotals);
   const iqEstimate = estimateIQ(totalPercent);
 
-  // --- Raw totals ---
   const raw = {
     totalQuestions: perQuestion.length,
     totalWeighted: sum(perQuestion.map((p) => p.weight)),
     totalCorrectWeighted: sum(perQuestion.map((p) => p.weight * p.score01)),
   };
+
+  // dev log
+  console.log("[SCORING] per-cat %:", categoryScores, "→ total%", totalPercent, "IQ", iqEstimate);
 
   return {
     version,
@@ -128,12 +126,17 @@ function percent(obj: { score: number; max: number }): number {
   return obj.max > 0 ? Math.round((obj.score / obj.max) * 100) : 0;
 }
 
-function average(nums: number[]): number {
-  return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
-}
-
 function sum(nums: number[]): number {
   return nums.reduce((a, b) => a + b, 0);
+}
+
+function weightedAverage(byCat: Record<CategoryId, { score: number; max: number }>): number {
+  let totalScore = 0, totalMax = 0;
+  for (const cat of Object.values(byCat)) {
+    totalScore += cat.score;
+    totalMax += cat.max;
+  }
+  return totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
 }
 
 function estimateIQ(percent: number): number {

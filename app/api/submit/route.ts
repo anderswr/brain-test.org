@@ -1,3 +1,4 @@
+// /app/api/submit/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
 import { computeResult } from "@/lib/scoring_iq";
@@ -16,23 +17,28 @@ export async function POST(req: NextRequest) {
     const id: string = body.id?.trim() || randomUUID();
     const answers: AnswerMap = body.answers || {};
 
-    // --- Beregn resultat ---
+    // --- 1️⃣ Beregn resultat ---
     let result;
     if (Object.keys(answers).length > 0) {
       const computed = computeResult(answers);
 
+      // Beregn realistisk 95% konfidensintervall ±10 poeng
+      const ciLow = Math.max(55, computed.iqEstimate - 10);
+      const ciHigh = Math.min(145, computed.iqEstimate + 10);
+
       result = {
         version: computed.version,
         iqEstimate: computed.iqEstimate,
-        totalPercent: computed.totalPercent,
+        totalPercent: Math.round(computed.totalPercent),
         categoryScores: computed.categoryScores,
-        ci: [
-          Math.max(55, computed.iqEstimate - 10),
-          Math.min(145, computed.iqEstimate + 10),
-        ] as [number, number],
+        ci: [ciLow, ciHigh] as [number, number],
       };
+
+      // Dev-log for sanitetssjekk
+      console.log("[API:SUBMIT] IQ =", result.iqEstimate, "CI", result.ci);
+      console.log("[API:SUBMIT] Category scores:", result.categoryScores);
     } else {
-      // --- Tom fallback (ingen svar) ---
+      // --- 2️⃣ Fallback dersom ingen svar ---
       result = {
         version: "fallback",
         iqEstimate: 100,
@@ -48,7 +54,7 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // --- Lagre / oppdatere ---
+    // --- 3️⃣ Lagre / oppdater resultat ---
     await col.updateOne(
       { id },
       {
@@ -63,9 +69,13 @@ export async function POST(req: NextRequest) {
       { upsert: true }
     );
 
+    // --- 4️⃣ Returner resultat ---
     return NextResponse.json({ ok: true, id, result }, { status: 200 });
-  } catch (err) {
-    console.error("POST /api/submit error", err);
-    return NextResponse.json({ ok: false, error: "server_error" }, { status: 500 });
+  } catch (err: any) {
+    console.error("[API:SUBMIT] Error:", err);
+    return NextResponse.json(
+      { ok: false, error: "server_error", message: err?.message || "Unknown error" },
+      { status: 500 }
+    );
   }
 }
