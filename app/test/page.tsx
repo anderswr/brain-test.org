@@ -49,21 +49,37 @@ export default function TestPage() {
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [showPreview, setShowPreview] = React.useState(true);
+  const [isDarkMode, setIsDarkMode] = React.useState(false);
+
   const QUESTION_BANK = React.useMemo(() => getRandomQuestionSet(), []);
-
-  // 🌙 detect dark mode once
-  const isDarkMode = React.useMemo(
-    () => window.matchMedia?.("(prefers-color-scheme: dark)").matches,
-    []
-  );
-
   const item = QUESTION_BANK[idx] as Question;
+
+  /* 🌙 Detect dark mode safely (client only) */
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.matchMedia) {
+      const mq = window.matchMedia("(prefers-color-scheme: dark)");
+      setIsDarkMode(mq.matches);
+      const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
+      mq.addEventListener("change", handler);
+      return () => mq.removeEventListener("change", handler);
+    }
+  }, []);
+
+  /* 🧠 Debug: log correct answer when showing new question */
+  React.useEffect(() => {
+    setShowPreview(true);
+    if (DEBUG_MODE && "correctIndex" in item) {
+      const correct = item.correctIndex;
+      const correctKey = item.optionsKey?.[correct];
+      console.debug(`[SHOW] ${item.id}: correct = ${correct} (${correctKey})`);
+    }
+  }, [idx]);
 
   function setChoice(choiceIndex: number) {
     const updated = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
 
-    // 🧠 DEBUG: log chosen vs correct answer
+    // 🧠 DEBUG: log chosen vs correct
     if (DEBUG_MODE && "correctIndex" in item) {
       const correct = item.correctIndex;
       const correctKey = item.optionsKey?.[correct];
@@ -110,9 +126,8 @@ export default function TestPage() {
     return <span>{text}</span>;
   };
 
-  const renderImage = (src?: string, id?: string) => {
-    if (!src) return null;
-    return (
+  const renderImage = (src?: string, id?: string) =>
+    src ? (
       <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
         <Image
           src={src}
@@ -131,10 +146,10 @@ export default function TestPage() {
           priority
         />
       </div>
-    );
-  };
+    ) : null;
 
   const renderQuestion = (q: Question) => {
+    // 🔹 MEMORY preview
     if (q.recallAfterView && q.previewImage && showPreview) {
       return (
         <div style={{ textAlign: "center" }}>
@@ -149,6 +164,7 @@ export default function TestPage() {
       );
     }
 
+    // 🔹 MULTIPLE / VISUAL / MATRIX
     if ("optionsKey" in q) {
       return (
         <div style={{ display: "grid", gap: 8 }}>
@@ -179,6 +195,7 @@ export default function TestPage() {
       );
     }
 
+    // 🔹 SEQUENCE
     if ("itemsKey" in q) {
       const selected = answers[q.id] || [];
       const handleSelect = (itemKey: string) => {
@@ -254,17 +271,6 @@ export default function TestPage() {
       </div>
     );
   };
-
-  React.useEffect(() => {
-    setShowPreview(true);
-
-    // 🧠 DEBUG: log correct answer when showing question
-    if (DEBUG_MODE && "correctIndex" in item) {
-      const correct = item.correctIndex;
-      const correctKey = item.optionsKey?.[correct];
-      console.debug(`[SHOW] ${item.id}: correct = ${correct} (${correctKey})`);
-    }
-  }, [idx]);
 
   return (
     <div>
