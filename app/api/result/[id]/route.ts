@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
 import { computeResult } from "@/lib/scoring_iq";
-import { QUESTION_BANK } from "@/data/question_index";
+import { CATEGORY_INDEX } from "@/data/question_index";
 import { AnswerMap } from "@/lib/types";
 
 export const runtime = "nodejs";
