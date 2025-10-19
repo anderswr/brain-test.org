@@ -99,7 +99,15 @@ export function computeResult(answers: AnswerMap): ComputedResult {
     memory: percent(categoryTotals.memory),
   };
 
-  const totalPercent = weightedAverage(categoryTotals);
+  // ✅ New: only include categories with actual questions in total average
+  const validCategoryPercents = Object.values(categoryTotals)
+    .filter((cat) => cat.max > 0)
+    .map((cat) => (cat.score / cat.max) * 100);
+
+  const totalPercent = validCategoryPercents.length
+    ? average(validCategoryPercents)
+    : 50; // default midpoint
+
   const iqEstimate = estimateIQ(totalPercent);
 
   const raw = {
@@ -109,7 +117,12 @@ export function computeResult(answers: AnswerMap): ComputedResult {
   };
 
   // dev log
-  console.log("[SCORING] per-cat %:", categoryScores, "→ total%", totalPercent, "IQ", iqEstimate);
+  console.log(
+    "[SCORING]",
+    "per-cat %:", categoryScores,
+    "→ valid avg%:", totalPercent,
+    "IQ:", iqEstimate
+  );
 
   return {
     version,
@@ -130,13 +143,8 @@ function sum(nums: number[]): number {
   return nums.reduce((a, b) => a + b, 0);
 }
 
-function weightedAverage(byCat: Record<CategoryId, { score: number; max: number }>): number {
-  let totalScore = 0, totalMax = 0;
-  for (const cat of Object.values(byCat)) {
-    totalScore += cat.score;
-    totalMax += cat.max;
-  }
-  return totalMax > 0 ? (totalScore / totalMax) * 100 : 0;
+function average(nums: number[]): number {
+  return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : 0;
 }
 
 function estimateIQ(percent: number): number {
