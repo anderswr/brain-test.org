@@ -10,6 +10,15 @@ import { t } from "@/lib/i18n";
 import { CategoryId, Question } from "@/lib/types";
 import { CATEGORY_INDEX } from "@/data/question_index";
 
+/* ------------------ DEBUG TOGGLE ------------------ */
+const DEBUG_MODE = true;
+/**
+ * Debug toggle — set to false before publishing!
+ *  - Logs correct answers in console when questions are shown
+ *  - Logs chosen answer + whether it’s correct when user answers
+ */
+
+/* ------------------ Helper: dynamic sampling ------------------ */
 function sample<T>(arr: T[], n: number): T[] {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(n, shuffled.length));
@@ -53,6 +62,21 @@ export default function TestPage() {
   function setChoice(choiceIndex: number) {
     const updated = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
+
+    // 🧠 DEBUG: log chosen vs correct answer
+    if (DEBUG_MODE && "correctIndex" in item) {
+      const correct = item.correctIndex;
+      const correctKey = item.optionsKey?.[correct];
+      const chosenKey = item.optionsKey?.[choiceIndex];
+      const isCorrect = choiceIndex === correct;
+      console.groupCollapsed(`[DEBUG] ${item.id} (${item.category})`);
+      console.log("Prompt:", item.textKey);
+      console.log("Chosen:", choiceIndex, chosenKey);
+      console.log("Correct:", correct, correctKey);
+      console.log(isCorrect ? "✅ CORRECT" : "❌ WRONG");
+      console.groupEnd();
+    }
+
     setTimeout(() => {
       if (idx < QUESTION_BANK.length - 1) {
         setIdx((i) => i + 1);
@@ -139,7 +163,7 @@ export default function TestPage() {
                 gap: 8,
                 alignItems: "center",
                 cursor: "pointer",
-                color: isDarkMode ? "#f5f5f5" : "#111", // 🌙 FIX
+                color: isDarkMode ? "#f5f5f5" : "#111",
               }}
             >
               <input
@@ -190,7 +214,7 @@ export default function TestPage() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   cursor: "pointer",
-                  color: isDarkMode ? "#f5f5f5" : "#111", // 🌙 FIX
+                  color: isDarkMode ? "#f5f5f5" : "#111",
                 }}
               >
                 {renderText(dict, itmKey, `Missing: ${itmKey}`)}
@@ -233,6 +257,13 @@ export default function TestPage() {
 
   React.useEffect(() => {
     setShowPreview(true);
+
+    // 🧠 DEBUG: log correct answer when showing question
+    if (DEBUG_MODE && "correctIndex" in item) {
+      const correct = item.correctIndex;
+      const correctKey = item.optionsKey?.[correct];
+      console.debug(`[SHOW] ${item.id}: correct = ${correct} (${correctKey})`);
+    }
   }, [idx]);
 
   return (
