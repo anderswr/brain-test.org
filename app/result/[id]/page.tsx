@@ -45,22 +45,33 @@ interface ResultResponse {
   result?: LegacyIQResult | NewIQResult;
 }
 
+const isLegacyResult = (value: unknown): value is LegacyIQResult => {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Record<string, unknown>;
+  const iqOk = typeof maybe.iq === "number";
+  const percentOk = typeof maybe.percent === "number";
+  const perCategory = maybe.perCategory;
+  const perCategoryOk = perCategory != null && typeof perCategory === "object";
+  return iqOk && percentOk && perCategoryOk;
+};
+
+const isNewResult = (value: unknown): value is NewIQResult => {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Record<string, unknown>;
+  return (
+    typeof maybe.iqEstimate === "number" &&
+    typeof maybe.totalPercent === "number" &&
+    maybe.categoryScores != null &&
+    typeof maybe.categoryScores === "object"
+  );
+};
+
 const isResultResponse = (value: unknown): value is ResultResponse => {
   if (!value || typeof value !== "object") return false;
   const maybe = value as Record<string, unknown>;
   const idOk = typeof maybe.id === "string";
-  const result = maybe.result as LegacyIQResult | NewIQResult | undefined;
-  const hasLegacy =
-    result != null &&
-    typeof result === "object" &&
-    "iq" in result &&
-    typeof (result as LegacyIQResult).iq === "number";
-  const hasNew =
-    result != null &&
-    typeof result === "object" &&
-    "iqEstimate" in result &&
-    typeof (result as NewIQResult).iqEstimate === "number";
-  return idOk && (hasLegacy || hasNew);
+  const result = maybe.result;
+  return idOk && (isLegacyResult(result) || isNewResult(result));
 };
 
 export default function ResultPage({ params }: { params: Promise<{ id: string }> }) {
@@ -104,25 +115,25 @@ export default function ResultPage({ params }: { params: Promise<{ id: string }>
   }, [resultId]);
 
   // --- Normalize result structure ---
-    const normalized = useMemo(() => {
-      const result = data?.result;
-      if (!result) return null;
+  const normalized = useMemo(() => {
+    const result = data?.result;
+    if (!result) return null;
 
-      if ("iqEstimate" in result && "categoryScores" in result) {
-        const iq = result.iqEstimate;
-        const ci: [number, number] = result.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
-        const perCategory = Object.fromEntries(
-          Object.entries(result.categoryScores).map(([k, v]) => [k, { percent: v }])
-        );
-        return { iq, ci, perCategory };
-      }
+    if (isNewResult(result)) {
+      const iq = result.iqEstimate;
+      const ci: [number, number] = result.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
+      const perCategory = Object.fromEntries(
+        Object.entries(result.categoryScores).map(([k, v]) => [k, { percent: v }])
+      );
+      return { iq, ci, perCategory };
+    }
 
-      if ("iq" in result && "perCategory" in result) {
-        return { iq: result.iq, ci: result.ci ?? [90, 110], perCategory: result.perCategory };
-      }
+    if (isLegacyResult(result)) {
+      return { iq: result.iq, ci: result.ci ?? [90, 110], perCategory: result.perCategory };
+    }
 
-      return null;
-    }, [data]);
+    return null;
+  }, [data]);
 
   const categories = useMemo(() => {
     const entries = Object.entries(normalized?.perCategory || {}) as [CategoryId, { percent: number }][];

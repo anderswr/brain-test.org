@@ -2,10 +2,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
 import { computeResult } from "@/lib/scoring_iq";
-import { CATEGORY_INDEX } from "@/data/question_index";
-import { AnswerMap } from "@/lib/types";
+import { AnswerMap, CategoryId, ResultSummary } from "@/lib/types";
 
 export const runtime = "nodejs";
+
+interface StoredResultDoc {
+  id: string;
+  answers?: AnswerMap;
+  result?: ResultSummary | LegacyResult;
+  updatedAt?: Date;
+  createdAt?: Date;
+}
+
+interface LegacyResult {
+  iq: number;
+  ci?: [number, number];
+  percent: number;
+  perCategory: Record<CategoryId, { percent: number }>;
+}
+
+const isAnswerMap = (value: unknown): value is AnswerMap => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const entries = Object.entries(value as Record<string, unknown>);
+  return entries.every(([, v]) =>
+    typeof v === "number" ||
+    typeof v === "string" ||
+    (Array.isArray(v) && v.every((x) => typeof x === "number" || typeof x === "string"))
+  );
+};
 
 export async function GET(
   _req: NextRequest,
@@ -14,7 +38,7 @@ export async function GET(
   try {
     const { id } = await params;
     const col = await getCollection("results");
-    const doc = await col.findOne({ id }, { projection: { _id: 0 } });
+    const doc = await col.findOne<StoredResultDoc>({ id }, { projection: { _id: 0 } });
 
     // --- Not found ---
     if (!doc) {
@@ -22,29 +46,23 @@ export async function GET(
     }
 
     // --- Return if already has new-format result ---
-    if (
-      doc.result &&
-      typeof doc.result.iqEstimate === "number" &&
-      doc.result.categoryScores
-    ) {
-      return NextResponse.json({ id: doc.id, result: doc.result }, { status: 200 });
+    if (doc.result && "iqEstimate" in doc.result) {
+      const result = doc.result;
+      return NextResponse.json({ id: doc.id, result }, { status: 200 });
     }
 
     // --- Recompute from stored answers ---
-    if (doc.answers && typeof doc.answers === "object") {
-      const answers = doc.answers as AnswerMap;
+    if (doc.answers && isAnswerMap(doc.answers)) {
+      const answers = doc.answers;
       const computed = computeResult(answers);
 
       // Transform to API-friendly DTO
-      const result = {
+      const result: ResultSummary = {
         version: computed.version,
         iqEstimate: computed.iqEstimate,
         totalPercent: computed.totalPercent,
         categoryScores: computed.categoryScores,
-        ci: [Math.max(55, computed.iqEstimate - 10), Math.min(145, computed.iqEstimate + 10)] as [
-          number,
-          number
-        ],
+        ci: [Math.max(55, computed.iqEstimate - 10), Math.min(145, computed.iqEstimate + 10)],
       };
 
       await col.updateOne(
@@ -56,7 +74,7 @@ export async function GET(
     }
 
     // --- Fallback ---
-    const fallback = {
+    const fallback: ResultSummary = {
       version: "fallback",
       iqEstimate: 100,
       totalPercent: 50,

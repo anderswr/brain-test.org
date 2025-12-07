@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
 import { computeResult } from "@/lib/scoring_iq";
-import { AnswerMap, AnswerValue } from "@/lib/types";
+import { AnswerMap, AnswerValue, ResultSummary } from "@/lib/types";
 import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     const answers: AnswerMap = incomingAnswers ?? {};
 
     // --- 1️⃣ Beregn resultat ---
-    let result;
+    let result: ResultSummary;
     if (Object.keys(answers).length > 0) {
       const computed = computeResult(answers);
 
