@@ -9,11 +9,12 @@ export const runtime = "nodejs";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const col = await getCollection("results");
-    const doc = await col.findOne({ id: params.id }, { projection: { _id: 0 } });
+    const doc = await col.findOne({ id }, { projection: { _id: 0 } });
 
     // --- Not found ---
     if (!doc) {
