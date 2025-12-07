@@ -2,7 +2,6 @@ import { CATEGORY_INDEX } from "@/data/question_index";
 import {
   AnswerMap,
   CategoryId,
-  Question,
   isMultiple,
   isMatrix,
   isVisual,

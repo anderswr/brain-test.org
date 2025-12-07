@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import nextPlugin from "@next/eslint-plugin-next";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
 
 export default [
   {
@@ -9,7 +10,7 @@ export default [
   },
   js.configs.recommended,
   {
-    files: ["**/*.{js,jsx,ts,tsx}"],
+    files: ["**/*.{ts,tsx,js,jsx}"],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -24,9 +25,17 @@ export default [
     },
     plugins: {
       "@next/next": nextPlugin,
+      "@typescript-eslint": tsPlugin,
     },
     rules: {
+      ...tsPlugin.configs["recommended-type-checked"].rules,
+      ...tsPlugin.configs["stylistic-type-checked"].rules,
       ...nextPlugin.configs["core-web-vitals"].rules,
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_", ignoreRestSiblings: true },
+      ],
     },
   },
 ];

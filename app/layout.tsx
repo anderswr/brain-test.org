@@ -1,4 +1,5 @@
 // /app/layout.tsx
+import React from "react";
 import "./globals.css";
 import { I18nProvider } from "./providers/I18nProvider";
 import { Analytics } from "@vercel/analytics/react";

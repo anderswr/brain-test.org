@@ -19,7 +19,9 @@ function getCurrentTheme(): Theme {
   try {
     const saved = localStorage.getItem("theme");
     if (saved === "light" || saved === "dark") return saved;
-  } catch {}
+  } catch (error) {
+    console.warn("[theme] Failed to read saved theme", error);
+  }
   if (typeof document !== "undefined") {
     const fromHtml = document.documentElement.getAttribute("data-theme");
     if (fromHtml === "light" || fromHtml === "dark") return fromHtml as Theme;
@@ -31,7 +33,11 @@ function getCurrentTheme(): Theme {
 }
 function setTheme(next: Theme) {
   document.documentElement.setAttribute("data-theme", next);
-  try { localStorage.setItem("theme", next); } catch {}
+  try {
+    localStorage.setItem("theme", next);
+  } catch (error) {
+    console.warn("[theme] Failed to persist theme", error);
+  }
 }
 
 export default function SiteHeader() {
