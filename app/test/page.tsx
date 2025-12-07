@@ -53,7 +53,7 @@ export default function TestPage() {
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   const QUESTION_BANK = React.useMemo(() => getRandomQuestionSet(), []);
-  const item = QUESTION_BANK[idx] as Question | undefined;
+  const item = QUESTION_BANK[idx];
 
   /* 🌙 Detect dark mode safely (client only) */
   React.useEffect(() => {

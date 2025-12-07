@@ -16,24 +16,35 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ReferenceArea,
+  TooltipProps,
+  NameType,
+  ValueType,
 } from "recharts";
 
-type LegacyIQResult = {
+interface LegacyIQResult {
   iq: number;
   ci: [number, number];
   percent: number;
   perCategory: Record<string, { percent: number }>;
-};
+}
 
-type NewIQResult = {
+interface NewIQResult {
   version: string;
   iqEstimate: number;
   totalPercent: number;
   categoryScores: Record<CategoryId, number>;
   ci?: [number, number];
-};
+}
 
-type ResultDoc = { id: string; result?: LegacyIQResult | NewIQResult };
+interface ResultDoc {
+  id: string;
+  result?: LegacyIQResult | NewIQResult;
+}
+
+interface ResultResponse {
+  id: string;
+  result?: LegacyIQResult | NewIQResult;
+}
 
 export default function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { dict } = useI18n();
@@ -44,13 +55,13 @@ export default function ResultPage({ params }: { params: Promise<{ id: string }>
   useEffect(() => {
     let cancelled = false;
 
-    Promise.resolve(params)
-      .then(({ id }) => {
-        if (!cancelled) setResultId(id);
-      })
-      .catch((err) => {
-        console.error("Failed to resolve params", err);
-        setNotFound(true);
+      void Promise.resolve(params)
+        .then(({ id }) => {
+          if (!cancelled) setResultId(id);
+        })
+        .catch((err) => {
+          console.error("Failed to resolve params", err);
+          setNotFound(true);
       });
 
     return () => {
@@ -61,11 +72,11 @@ export default function ResultPage({ params }: { params: Promise<{ id: string }>
   useEffect(() => {
     if (!resultId) return;
 
-    (async () => {
+    void (async () => {
       try {
         const res = await fetch(`/api/result/${resultId}`, { cache: "no-store" });
         if (!res.ok) return setNotFound(true);
-        const json = await res.json();
+        const json: ResultResponse = await res.json();
         if (!json?.result) return setNotFound(true);
         setData(json);
       } catch (err) {
@@ -155,7 +166,7 @@ export default function ResultPage({ params }: { params: Promise<{ id: string }>
               <code className="code-badge">{data?.id}</code>
               <button
                 className="btn"
-                onClick={() => navigator.clipboard.writeText(data?.id || "")}
+                onClick={() => void navigator.clipboard.writeText(data?.id || "")}
               >
                 {t(dict, "ui-result-copy_id", "Copy ID")}
               </button>
@@ -289,6 +300,17 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
     { from: 130, to: 145, label: "130+ – Gifted", color: "#a855f7" },
   ];
 
+  const tooltipFormatter: TooltipProps<ValueType, NameType>["formatter"] = (
+    value,
+    _name,
+    props
+  ) => {
+    const payload = props?.payload as { x?: number } | undefined;
+    const xValue = payload?.x ?? userIQ;
+    const numeric = typeof value === "number" ? value : Number(value);
+    return [`Density ${numeric.toFixed(4)}`, `IQ ${xValue}`];
+  };
+
   return (
     <div style={{ width: "100%", height: 260 }}>
       <ResponsiveContainer>
@@ -321,12 +343,7 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
             />
           ))}
 
-          <Tooltip
-            formatter={(v, n, p) => [
-              `Density ${(v as number).toFixed(4)}`,
-              `IQ ${p.payload.x}`,
-            ]}
-          />
+          <Tooltip formatter={tooltipFormatter} />
 
           <Area
             type="monotone"
