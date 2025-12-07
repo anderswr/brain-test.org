@@ -16,6 +16,9 @@ module.exports = {
       'warn',
       { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
     ],
+    // These rules require strictNullChecks; disable until the project enables strict mode.
+    '@typescript-eslint/prefer-nullish-coalescing': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
   },
   ignorePatterns: ['.next/**', 'node_modules/**', 'dist/**', 'build/**'],
 };
