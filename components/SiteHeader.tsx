@@ -13,6 +13,12 @@ const LANGS = [
   { code: "en", label: "English", flag: "🇺🇸" },
 ] as const;
 
+type LanguageCode = (typeof LANGS)[number]["code"];
+
+function toLanguageCode(value: string): LanguageCode {
+  return LANGS.find((lang) => lang.code === value)?.code ?? LANGS[0].code;
+}
+
 type Theme = "light" | "dark";
 
 function getCurrentTheme(): Theme {
@@ -72,7 +78,8 @@ export default function SiteHeader() {
     };
   }, []);
 
-  const current = LANGS.find((l) => l.code === (lang as any)) ?? LANGS[0];
+  const currentLang = toLanguageCode(lang);
+  const current = LANGS.find((l) => l.code === currentLang) ?? LANGS[0];
 
   const NavItem = ({ href, k }: { href: string; k: string }) => (
     <Link
@@ -157,9 +164,12 @@ export default function SiteHeader() {
                   key={l.code}
                   type="button"
                   role="menuitemradio"
-                  aria-checked={lang === (l.code as any)}
-                  className={`lang-item ${lang === (l.code as any) ? "active" : ""}`}
-                  onClick={() => { setLang(l.code as any); setMenuOpen(false); }}
+                  aria-checked={lang === l.code}
+                  className={`lang-item ${lang === l.code ? "active" : ""}`}
+                  onClick={() => {
+                    setLang(l.code);
+                    setMenuOpen(false);
+                  }}
                 >
                   <span className="flag" aria-hidden>{l.flag}</span>
                   <span className="lang-label">{l.label}</span>

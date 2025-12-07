@@ -169,5 +169,5 @@ export const VERBAL_QUESTIONS: Question[] = [
 
 // --- Answer key ---
 export const ANSWER_KEY_VERBAL: Record<string, number> = Object.fromEntries(
-  VERBAL_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
+  VERBAL_QUESTIONS.map((q) => [q.id, "correctIndex" in q ? q.correctIndex : -1])
 );

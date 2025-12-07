@@ -71,10 +71,14 @@ export async function POST(req: NextRequest) {
 
     // --- 4️⃣ Returner resultat ---
     return NextResponse.json({ ok: true, id, result }, { status: 200 });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[API:SUBMIT] Error:", err);
     return NextResponse.json(
-      { ok: false, error: "server_error", message: err?.message || "Unknown error" },
+      {
+        ok: false,
+        error: "server_error",
+        message: err instanceof Error ? err.message : "Unknown error",
+      },
       { status: 500 }
     );
   }

@@ -7,8 +7,9 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
-import { CategoryId, Question } from "@/lib/types";
+import { CategoryId, type AnswerMap, type Question } from "@/lib/types";
 import { CATEGORY_INDEX } from "@/data/question_index";
+import type { Dict } from "@/lib/i18n";
 
 /* ------------------ DEBUG TOGGLE ------------------ */
 const DEBUG_MODE = true;
@@ -45,14 +46,14 @@ function getRandomQuestionSet(): Question[] {
 export default function TestPage() {
   const { dict, lang } = useI18n();
   const [idx, setIdx] = React.useState(0);
-  const [answers, setAnswers] = React.useState<Record<string, any>>({});
+  const [answers, setAnswers] = React.useState<AnswerMap>({});
   const [submitting, setSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [showPreview, setShowPreview] = React.useState(true);
   const [isDarkMode, setIsDarkMode] = React.useState(false);
 
   const QUESTION_BANK = React.useMemo(() => getRandomQuestionSet(), []);
-  const item = QUESTION_BANK[idx] as Question;
+  const item = QUESTION_BANK[idx] as Question | undefined;
 
   /* 🌙 Detect dark mode safely (client only) */
   React.useEffect(() => {
@@ -63,20 +64,22 @@ export default function TestPage() {
       mq.addEventListener("change", handler);
       return () => mq.removeEventListener("change", handler);
     }
+    return undefined;
   }, []);
 
   /* 🧠 Debug: log correct answer when showing new question */
   React.useEffect(() => {
     setShowPreview(true);
-    if (DEBUG_MODE && "correctIndex" in item) {
+    if (DEBUG_MODE && item && "correctIndex" in item) {
       const correct = item.correctIndex;
       const correctKey = item.optionsKey?.[correct];
       console.debug(`[SHOW] ${item.id}: correct = ${correct} (${correctKey})`);
     }
-  }, [idx]);
+  }, [idx, item]);
 
   function setChoice(choiceIndex: number) {
-    const updated = { ...answers, [item.id]: choiceIndex };
+    if (!item) return;
+    const updated: AnswerMap = { ...answers, [item.id]: choiceIndex };
     setAnswers(updated);
 
     // 🧠 DEBUG: log chosen vs correct
@@ -97,12 +100,12 @@ export default function TestPage() {
       if (idx < QUESTION_BANK.length - 1) {
         setIdx((i) => i + 1);
       } else {
-        submit(updated);
+        void submit(updated);
       }
     }, 250);
   }
 
-  async function submit(payload?: Record<string, any>) {
+  async function submit(payload?: AnswerMap) {
     const data = payload || answers;
     try {
       setSubmitting(true);
@@ -111,18 +114,19 @@ export default function TestPage() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ answers: data, lang }),
       });
-      const json = await res.json();
+      const json = (await res.json()) as { id?: string; error?: string };
       if (!res.ok) throw new Error(json?.error || "submit_failed");
       window.location.href = `/result/${json.id}`;
-    } catch (e: any) {
-      setError(e?.message || "submit_failed");
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "submit_failed";
+      setError(message);
     } finally {
       setSubmitting(false);
     }
   }
 
-  const renderText = (dict: any, key: string, fallback = "") => {
-    const text = t(dict, key, fallback);
+  const renderText = (activeDict: Dict | null | undefined, key: string, fallback = "") => {
+    const text = t(activeDict, key, fallback);
     return <span>{text}</span>;
   };
 
@@ -164,47 +168,20 @@ export default function TestPage() {
       );
     }
 
-    // 🔹 MULTIPLE / VISUAL / MATRIX
-    if ("optionsKey" in q) {
-      return (
-        <div style={{ display: "grid", gap: 8 }}>
-          {renderImage(q.image, q.id)}
-          {q.optionsKey.map((optKey: string, i: number) => (
-            <label
-              key={i}
-              className="card"
-              style={{
-                padding: 12,
-                display: "flex",
-                gap: 8,
-                alignItems: "center",
-                cursor: "pointer",
-                color: isDarkMode ? "#f5f5f5" : "#111",
-              }}
-            >
-              <input
-                type="radio"
-                name={`q-${q.id}`}
-                checked={answers[q.id] === i}
-                onChange={() => setChoice(i)}
-              />
-              {renderText(dict, optKey, `Missing: ${optKey}`)}
-            </label>
-          ))}
-        </div>
-      );
-    }
-
     // 🔹 SEQUENCE
-    if ("itemsKey" in q) {
-      const selected = answers[q.id] || [];
+    if (q.kind === "sequence") {
+      const selectedRaw = answers[q.id];
+      const selected = Array.isArray(selectedRaw)
+        ? selectedRaw.map((value) => String(value))
+        : [];
       const handleSelect = (itemKey: string) => {
         setAnswers((prev) => {
-          const current = prev[q.id] || [];
+          const currentRaw = prev[q.id];
+          const current = Array.isArray(currentRaw)
+            ? currentRaw.map((value) => String(value))
+            : [];
           const exists = current.includes(itemKey);
-          const newOrder = exists
-            ? current.filter((x: string) => x !== itemKey)
-            : [...current, itemKey];
+          const newOrder = exists ? current.filter((x) => x !== itemKey) : [...current, itemKey];
           return { ...prev, [q.id]: newOrder };
         });
       };
@@ -264,6 +241,40 @@ export default function TestPage() {
       );
     }
 
+    // 🔹 MULTIPLE / VISUAL / MATRIX
+    if ("optionsKey" in q) {
+      const selectedValue = answers[q.id];
+      const selectedIndex = typeof selectedValue === "number" ? selectedValue : -1;
+
+      return (
+        <div style={{ display: "grid", gap: 8 }}>
+          {renderImage(q.image, q.id)}
+          {q.optionsKey.map((optKey: string, i: number) => (
+            <label
+              key={optKey}
+              className="card"
+              style={{
+                padding: 12,
+                display: "flex",
+                gap: 8,
+                alignItems: "center",
+                cursor: "pointer",
+                color: isDarkMode ? "#f5f5f5" : "#111",
+              }}
+            >
+              <input
+                type="radio"
+                name={`q-${q.id}`}
+                checked={selectedIndex === i}
+                onChange={() => setChoice(i)}
+              />
+              {renderText(dict, optKey, `Missing: ${optKey}`)}
+            </label>
+          ))}
+        </div>
+      );
+    }
+
     return (
       <div style={{ textAlign: "center" }}>
         {renderImage(q.image, q.id)}
@@ -271,6 +282,8 @@ export default function TestPage() {
       </div>
     );
   };
+
+  if (!item) return null;
 
   return (
     <div>
@@ -314,7 +327,9 @@ export default function TestPage() {
               ) : (
                 <button
                   className="btn"
-                  onClick={() => submit()}
+                  onClick={() => {
+                    void submit();
+                  }}
                   disabled={
                     Object.keys(answers).length !== QUESTION_BANK.length ||
                     submitting

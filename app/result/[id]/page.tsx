@@ -76,25 +76,25 @@ export default function ResultPage({ params }: { params: Promise<{ id: string }>
   }, [resultId]);
 
   // --- Normalize result structure ---
-  const normalized = useMemo(() => {
-    const r = data?.result as any;
-    if (!r) return null;
+    const normalized = useMemo(() => {
+      const result = data?.result;
+      if (!result) return null;
 
-    if ("iqEstimate" in r && "categoryScores" in r) {
-      const iq = r.iqEstimate;
-      const ci: [number, number] = r.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
-      const perCategory = Object.fromEntries(
-        Object.entries(r.categoryScores).map(([k, v]) => [k, { percent: v }])
-      );
-      return { iq, ci, perCategory };
-    }
+      if ("iqEstimate" in result && "categoryScores" in result) {
+        const iq = result.iqEstimate;
+        const ci: [number, number] = result.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
+        const perCategory = Object.fromEntries(
+          Object.entries(result.categoryScores).map(([k, v]) => [k, { percent: v }])
+        );
+        return { iq, ci, perCategory };
+      }
 
-    if ("iq" in r && "perCategory" in r) {
-      return { iq: r.iq, ci: r.ci ?? [90, 110], perCategory: r.perCategory };
-    }
+      if ("iq" in result && "perCategory" in result) {
+        return { iq: result.iq, ci: result.ci ?? [90, 110], perCategory: result.perCategory };
+      }
 
-    return null;
-  }, [data]);
+      return null;
+    }, [data]);
 
   const categories = useMemo(() => {
     const entries = Object.entries(normalized?.perCategory || {}) as [CategoryId, { percent: number }][];
