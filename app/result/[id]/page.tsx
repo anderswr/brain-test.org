@@ -17,9 +17,8 @@ import {
   ReferenceLine,
   ReferenceArea,
   TooltipProps,
-  NameType,
-  ValueType,
 } from "recharts";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
 interface LegacyIQResult {
   iq: number;
