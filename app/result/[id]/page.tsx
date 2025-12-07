@@ -35,15 +35,35 @@ type NewIQResult = {
 
 type ResultDoc = { id: string; result?: LegacyIQResult | NewIQResult };
 
-export default function ResultPage({ params }: { params: { id: string } }) {
+export default function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { dict } = useI18n();
   const [data, setData] = useState<ResultDoc | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [resultId, setResultId] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+
+    Promise.resolve(params)
+      .then(({ id }) => {
+        if (!cancelled) setResultId(id);
+      })
+      .catch((err) => {
+        console.error("Failed to resolve params", err);
+        setNotFound(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    if (!resultId) return;
+
     (async () => {
       try {
-        const res = await fetch(`/api/result/${params.id}`, { cache: "no-store" });
+        const res = await fetch(`/api/result/${resultId}`, { cache: "no-store" });
         if (!res.ok) return setNotFound(true);
         const json = await res.json();
         if (!json?.result) return setNotFound(true);
@@ -53,7 +73,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
         setNotFound(true);
       }
     })();
-  }, [params.id]);
+  }, [resultId]);
 
   // --- Normalize result structure ---
   const normalized = useMemo(() => {
