@@ -45,6 +45,24 @@ interface ResultResponse {
   result?: LegacyIQResult | NewIQResult;
 }
 
+const isResultResponse = (value: unknown): value is ResultResponse => {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Record<string, unknown>;
+  const idOk = typeof maybe.id === "string";
+  const result = maybe.result as LegacyIQResult | NewIQResult | undefined;
+  const hasLegacy =
+    result != null &&
+    typeof result === "object" &&
+    "iq" in result &&
+    typeof (result as LegacyIQResult).iq === "number";
+  const hasNew =
+    result != null &&
+    typeof result === "object" &&
+    "iqEstimate" in result &&
+    typeof (result as NewIQResult).iqEstimate === "number";
+  return idOk && (hasLegacy || hasNew);
+};
+
 export default function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { dict } = useI18n();
   const [data, setData] = useState<ResultDoc | null>(null);
@@ -54,13 +72,13 @@ export default function ResultPage({ params }: { params: Promise<{ id: string }>
   useEffect(() => {
     let cancelled = false;
 
-      void Promise.resolve(params)
-        .then(({ id }) => {
-          if (!cancelled) setResultId(id);
-        })
-        .catch((err) => {
-          console.error("Failed to resolve params", err);
-          setNotFound(true);
+    void Promise.resolve(params)
+      .then(({ id }) => {
+        if (!cancelled) setResultId(id);
+      })
+      .catch((err) => {
+        console.error("Failed to resolve params", err);
+        setNotFound(true);
       });
 
     return () => {
@@ -75,8 +93,8 @@ export default function ResultPage({ params }: { params: Promise<{ id: string }>
       try {
         const res = await fetch(`/api/result/${resultId}`, { cache: "no-store" });
         if (!res.ok) return setNotFound(true);
-        const json: ResultResponse = await res.json();
-        if (!json?.result) return setNotFound(true);
+        const json = (await res.json()) as unknown;
+        if (!isResultResponse(json) || !json.result) return setNotFound(true);
         setData(json);
       } catch (err) {
         console.error("Result fetch failed", err);

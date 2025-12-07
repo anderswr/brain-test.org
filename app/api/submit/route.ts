@@ -2,20 +2,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/db";
 import { computeResult } from "@/lib/scoring_iq";
-import { AnswerMap } from "@/lib/types";
+import { AnswerMap, AnswerValue } from "@/lib/types";
 import { randomUUID } from "crypto";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
+function isAnswerValue(value: unknown): value is AnswerValue {
+  return (
+    typeof value === "number" ||
+    typeof value === "string" ||
+    (Array.isArray(value) && value.every((v) => typeof v === "number" || typeof v === "string"))
+  );
+}
+
+function parseSubmitBody(body: unknown): { id?: string; answers?: AnswerMap } {
+  if (!body || typeof body !== "object") return {};
+  const maybe = body as Record<string, unknown>;
+  const id = typeof maybe.id === "string" ? maybe.id : undefined;
+
+  const answersValue = maybe.answers;
+  if (answersValue && typeof answersValue === "object" && !Array.isArray(answersValue)) {
+    const entries = Object.entries(answersValue).filter(([, v]) => isAnswerValue(v));
+    return { id, answers: Object.fromEntries(entries) };
+  }
+
+  return { id };
+}
+
 export async function POST(req: NextRequest) {
   try {
     const col = await getCollection("results");
-    const body = await req.json();
+    const body = (await req.json()) as unknown;
 
-    const id: string = body.id?.trim() || randomUUID();
-    const answers: AnswerMap = body.answers || {};
+    const { id: incomingId, answers: incomingAnswers } = parseSubmitBody(body);
+    const id: string = incomingId?.trim() || randomUUID();
+    const answers: AnswerMap = incomingAnswers ?? {};
 
     // --- 1️⃣ Beregn resultat ---
     let result;

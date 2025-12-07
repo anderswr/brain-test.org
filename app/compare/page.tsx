@@ -6,7 +6,7 @@ import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
 
-type ResultDoc = {
+interface ResultDoc {
   id: string;
   result: {
     iq: number;
@@ -14,7 +14,7 @@ type ResultDoc = {
     percent: number;
     perCategory: Record<string, { percent: number }>;
   };
-};
+}
 
 export default function ComparePage() {
   const { dict } = useI18n();
@@ -36,7 +36,7 @@ export default function ComparePage() {
     try {
       const [ra, rb] = await Promise.all([
         fetch(`/api/result/${a}`, { cache: "no-store" }),
-        fetch(`/api/result/${b}`, { cache: "no-store" })
+        fetch(`/api/result/${b}`, { cache: "no-store" }),
       ]);
       if (!ra.ok || !rb.ok) {
         setErr(t(dict, "ui-compare-notfound", "Could not find one or both IDs."));
@@ -91,7 +91,7 @@ export default function ComparePage() {
               value={b}
               onChange={(e) => setB(e.target.value.trim())}
             />
-            <button className="btn primary" onClick={run} disabled={!a || !b || loading}>
+            <button className="btn primary" onClick={() => void run()} disabled={!a || !b || loading}>
               {loading
                 ? t(dict, "ui-common-sending", "Loading…")
                 : t(dict, "ui-nav-compare", "Compare")}
