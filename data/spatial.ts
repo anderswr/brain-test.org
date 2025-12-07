@@ -148,5 +148,5 @@ export const SPATIAL_QUESTIONS: Question[] = [
 
 // --- Answer key ---
 export const ANSWER_KEY_SPATIAL: Record<string, number> = Object.fromEntries(
-  SPATIAL_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
+  SPATIAL_QUESTIONS.map((q) => [q.id, "correctIndex" in q ? q.correctIndex : -1])
 );

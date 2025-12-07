@@ -100,5 +100,5 @@ export const MATH_QUESTIONS: Question[] = [
 
 // --- Answer key ---
 export const ANSWER_KEY_MATH: Record<string, number> = Object.fromEntries(
-  MATH_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
+  MATH_QUESTIONS.map((q) => [q.id, "correctIndex" in q ? q.correctIndex : -1])
 );

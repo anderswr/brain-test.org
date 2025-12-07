@@ -2,18 +2,30 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useI18n } from "@/app/providers/I18nProvider";
 import { t } from "@/lib/i18n";
 
-type ArticleMeta = {
+interface ArticleMeta {
   slug: string;
   title: string;
   summary?: string;
   tags?: string[];
-};
+}
+
+function isArticleMetaArray(value: unknown): value is ArticleMeta[] {
+  if (!Array.isArray(value)) return false;
+  return value.every(
+    (item) =>
+      item &&
+      typeof item === "object" &&
+      typeof (item as ArticleMeta).slug === "string" &&
+      typeof (item as ArticleMeta).title === "string"
+  );
+}
 
 export default function ArticlesPage() {
   const { dict, lang } = useI18n();
@@ -32,25 +44,29 @@ export default function ArticlesPage() {
       try {
         const res1 = await fetch(urlFor(lang), { cache: "no-store" });
         if (res1.ok) {
-          const json = (await res1.json()) as ArticleMeta[];
-          if (!cancelled) setItems(json);
-          return;
+          const json = (await res1.json()) as unknown;
+          if (isArticleMetaArray(json)) {
+            if (!cancelled) setItems(json);
+            return;
+          }
         }
       } catch {}
 
       try {
         const res2 = await fetch(urlFor("en"), { cache: "no-store" });
         if (res2.ok) {
-          const json = (await res2.json()) as ArticleMeta[];
-          if (!cancelled) setItems(json);
-          return;
+          const json = (await res2.json()) as unknown;
+          if (isArticleMetaArray(json)) {
+            if (!cancelled) setItems(json);
+            return;
+          }
         }
       } catch {}
 
       if (!cancelled) setError("Could not load articles.");
     }
 
-    load();
+    void load();
     return () => {
       cancelled = true;
     };
@@ -99,11 +115,13 @@ export default function ArticlesPage() {
                     aria-label={a.title}
                   >
                     <div className="media" aria-hidden>
-                      <img
+                      <Image
                         src={`/images/${a.slug}.png`}
-                        alt=""
+                        alt={a.title}
                         className="card-image"
                         loading="lazy"
+                        width={640}
+                        height={360}
                       />
                       <span className="media-gradient" />
                     </div>

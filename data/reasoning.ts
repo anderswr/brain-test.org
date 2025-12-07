@@ -219,5 +219,5 @@ export const REASONING_QUESTIONS: Question[] = [
 
 // --- Answer key ---
 export const ANSWER_KEY_REASONING: Record<string, number> = Object.fromEntries(
-  REASONING_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
+  REASONING_QUESTIONS.map((q) => [q.id, "correctIndex" in q ? q.correctIndex : -1])
 );

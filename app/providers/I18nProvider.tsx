@@ -12,13 +12,14 @@ export type Dict = Record<string, string>;
 async function loadDict(lang: string): Promise<Dict> {
   // Flat file structure: e.g. en.json, en-reasoning.json, en-math.json ...
   const suffixes = ["", "-reasoning", "-math", "-verbal", "-spatial", "-memory"];
-  let merged: Dict = {};
+  const merged: Dict = {};
 
   for (const suffix of suffixes) {
     const filename = `${lang}${suffix}.json`;
     try {
-      const mod = await import(`@/locales/${filename}`);
-      Object.assign(merged, mod.default ?? mod);
+      const mod = (await import(`@/locales/${filename}`)) as { default?: Dict } | Dict;
+      const payload = "default" in mod ? mod.default : mod;
+      Object.assign(merged, payload);
     } catch {
       console.warn(`[i18n] Missing file: ${filename}`);
     }
@@ -40,11 +41,15 @@ const I18nContext = React.createContext<{
   lang: string;
   setLang: (lang: string) => void;
   dict: Dict;
-}>({
-  lang: "en",
-  setLang: () => {},
-  dict: {},
-});
+}>(
+  {
+    lang: "en",
+    setLang: (nextLang: string) => {
+      console.warn(`[i18n] setLang called before provider mounted (${nextLang})`);
+    },
+    dict: {},
+  }
+);
 
 /**
  * Provider component for the i18n context.
@@ -56,9 +61,13 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     let isMounted = true;
-    loadDict(lang).then((data) => {
-      if (isMounted) setDict(data);
-    });
+    void loadDict(lang)
+      .then((data) => {
+        if (isMounted) setDict(data);
+      })
+      .catch((err) => {
+        console.error("[i18n] Failed to load dictionary", err);
+      });
     return () => {
       isMounted = false;
     };
