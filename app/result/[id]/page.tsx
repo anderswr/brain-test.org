@@ -16,61 +16,120 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   ReferenceArea,
+  TooltipProps,
 } from "recharts";
+import type { NameType, ValueType } from "recharts/types/component/DefaultTooltipContent";
 
-type LegacyIQResult = {
+interface LegacyIQResult {
   iq: number;
   ci: [number, number];
   percent: number;
   perCategory: Record<string, { percent: number }>;
-};
+}
 
-type NewIQResult = {
+interface NewIQResult {
   version: string;
   iqEstimate: number;
   totalPercent: number;
   categoryScores: Record<CategoryId, number>;
   ci?: [number, number];
+}
+
+interface ResultDoc {
+  id: string;
+  result?: LegacyIQResult | NewIQResult;
+}
+
+interface ResultResponse {
+  id: string;
+  result?: LegacyIQResult | NewIQResult;
+}
+
+const isLegacyResult = (value: unknown): value is LegacyIQResult => {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Record<string, unknown>;
+  const iqOk = typeof maybe.iq === "number";
+  const percentOk = typeof maybe.percent === "number";
+  const perCategory = maybe.perCategory;
+  const perCategoryOk = perCategory != null && typeof perCategory === "object";
+  return iqOk && percentOk && perCategoryOk;
 };
 
-type ResultDoc = { id: string; result?: LegacyIQResult | NewIQResult };
+const isNewResult = (value: unknown): value is NewIQResult => {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Record<string, unknown>;
+  return (
+    typeof maybe.iqEstimate === "number" &&
+    typeof maybe.totalPercent === "number" &&
+    maybe.categoryScores != null &&
+    typeof maybe.categoryScores === "object"
+  );
+};
 
-export default function ResultPage({ params }: { params: { id: string } }) {
+const isResultResponse = (value: unknown): value is ResultResponse => {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Record<string, unknown>;
+  const idOk = typeof maybe.id === "string";
+  const result = maybe.result;
+  return idOk && (isLegacyResult(result) || isNewResult(result));
+};
+
+export default function ResultPage({ params }: { params: Promise<{ id: string }> }) {
   const { dict } = useI18n();
   const [data, setData] = useState<ResultDoc | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [resultId, setResultId] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+
+    void Promise.resolve(params)
+      .then(({ id }) => {
+        if (!cancelled) setResultId(id);
+      })
+      .catch((err) => {
+        console.error("Failed to resolve params", err);
+        setNotFound(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params]);
+
+  useEffect(() => {
+    if (!resultId) return;
+
+    void (async () => {
       try {
-        const res = await fetch(`/api/result/${params.id}`, { cache: "no-store" });
+        const res = await fetch(`/api/result/${resultId}`, { cache: "no-store" });
         if (!res.ok) return setNotFound(true);
-        const json = await res.json();
-        if (!json?.result) return setNotFound(true);
+        const json = (await res.json()) as unknown;
+        if (!isResultResponse(json) || !json.result) return setNotFound(true);
         setData(json);
       } catch (err) {
         console.error("Result fetch failed", err);
         setNotFound(true);
       }
     })();
-  }, [params.id]);
+  }, [resultId]);
 
   // --- Normalize result structure ---
   const normalized = useMemo(() => {
-    const r = data?.result as any;
-    if (!r) return null;
+    const result = data?.result;
+    if (!result) return null;
 
-    if ("iqEstimate" in r && "categoryScores" in r) {
-      const iq = r.iqEstimate;
-      const ci: [number, number] = r.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
+    if (isNewResult(result)) {
+      const iq = result.iqEstimate;
+      const ci: [number, number] = result.ci ?? [Math.max(55, iq - 10), Math.min(145, iq + 10)];
       const perCategory = Object.fromEntries(
-        Object.entries(r.categoryScores).map(([k, v]) => [k, { percent: v }])
+        Object.entries(result.categoryScores).map(([k, v]) => [k, { percent: v }])
       );
       return { iq, ci, perCategory };
     }
 
-    if ("iq" in r && "perCategory" in r) {
-      return { iq: r.iq, ci: r.ci ?? [90, 110], perCategory: r.perCategory };
+    if (isLegacyResult(result)) {
+      return { iq: result.iq, ci: result.ci ?? [90, 110], perCategory: result.perCategory };
     }
 
     return null;
@@ -135,7 +194,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
               <code className="code-badge">{data?.id}</code>
               <button
                 className="btn"
-                onClick={() => navigator.clipboard.writeText(data?.id || "")}
+                onClick={() => void navigator.clipboard.writeText(data?.id || "")}
               >
                 {t(dict, "ui-result-copy_id", "Copy ID")}
               </button>
@@ -269,6 +328,17 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
     { from: 130, to: 145, label: "130+ – Gifted", color: "#a855f7" },
   ];
 
+  const tooltipFormatter: TooltipProps<ValueType, NameType>["formatter"] = (
+    value,
+    _name,
+    props
+  ) => {
+    const payload = props?.payload as { x?: number } | undefined;
+    const xValue = payload?.x ?? userIQ;
+    const numeric = typeof value === "number" ? value : Number(value);
+    return [`Density ${numeric.toFixed(4)}`, `IQ ${xValue}`];
+  };
+
   return (
     <div style={{ width: "100%", height: 260 }}>
       <ResponsiveContainer>
@@ -301,12 +371,7 @@ function IQBellChart({ userIQ, ci }: { userIQ: number; ci: [number, number] }) {
             />
           ))}
 
-          <Tooltip
-            formatter={(v, n, p) => [
-              `Density ${(v as number).toFixed(4)}`,
-              `IQ ${p.payload.x}`,
-            ]}
-          />
+          <Tooltip formatter={tooltipFormatter} />
 
           <Area
             type="monotone"

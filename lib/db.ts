@@ -1,16 +1,15 @@
 // /lib/db.ts
 import { MongoClient, Db, Collection, Document } from "mongodb";
 
-// Cache klient mellom hot reloads (Next.js Dev)
-declare global {
-  // eslint-disable-next-line no-var
-  var _mongoClient: MongoClient | null;
-  // eslint-disable-next-line no-var
-  var _mongoDb: Db | null;
-}
+type GlobalWithMongo = typeof globalThis & {
+  _mongoClient?: MongoClient | null;
+  _mongoDb?: Db | null;
+};
 
-let client: MongoClient | null = global._mongoClient || null;
-let db: Db | null = global._mongoDb || null;
+const globalWithMongo = globalThis as GlobalWithMongo;
+
+let client: MongoClient | null = globalWithMongo._mongoClient || null;
+let db: Db | null = globalWithMongo._mongoDb || null;
 
 export async function getDb(): Promise<Db> {
   if (db) return db;
@@ -29,8 +28,8 @@ export async function getDb(): Promise<Db> {
     db = client.db(dbName);
 
     // cache for dev hot-reload
-    global._mongoClient = client;
-    global._mongoDb = db;
+    globalWithMongo._mongoClient = client;
+    globalWithMongo._mongoDb = db;
   } else if (!db) {
     db = client.db(dbName);
   }

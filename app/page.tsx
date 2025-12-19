@@ -7,6 +7,18 @@ import { t } from "@/lib/i18n";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
+interface StatsResponse {
+  total?: number;
+  count?: number;
+  totalTests?: number;
+}
+
+const isStatsResponse = (value: unknown): value is StatsResponse => {
+  if (!value || typeof value !== "object") return false;
+  const maybe = value as Partial<Record<keyof StatsResponse, unknown>>;
+  return ["total", "count", "totalTests"].some((k) => typeof maybe[k as keyof StatsResponse] === "number");
+};
+
 export default function Home() {
   const { dict } = useI18n();
 
@@ -20,20 +32,19 @@ export default function Home() {
       try {
         const res = await fetch("/api/stats", { cache: "no-store" });
         if (!res.ok) return null;
-        const json = await res.json();
-        return (
-          json.total ??
-          json.count ??
-          json.totalTests ??
-          null
-        );
+        const json = (await res.json()) as unknown;
+        if (!isStatsResponse(json)) return null;
+        return json.total ?? json.count ?? json.totalTests ?? null;
       } catch {
         return null;
       }
     }
-    fetchCount().then((n) => {
-      if (!canceled && typeof n === "number") setTargetCount(n);
-    });
+    void (async () => {
+      const n = await fetchCount();
+      if (!canceled && typeof n === "number") {
+        setTargetCount(n);
+      }
+    })();
     return () => {
       canceled = true;
     };

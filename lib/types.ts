@@ -139,6 +139,15 @@ export interface ComputedResult {
   raw: RawCounts;
 }
 
+/** Result payload returned to clients */
+export interface ResultSummary {
+  version: string;
+  iqEstimate: number;
+  totalPercent: number;
+  categoryScores: CategoryScores;
+  ci: [number, number];
+}
+
 /** Category→IDs index */
 export type ByCategoryIndex = Record<CategoryId, string[]>;
 

@@ -13,13 +13,21 @@ const LANGS = [
   { code: "en", label: "English", flag: "🇺🇸" },
 ] as const;
 
+type LanguageCode = (typeof LANGS)[number]["code"];
+
+function toLanguageCode(value: string): LanguageCode {
+  return LANGS.find((lang) => lang.code === value)?.code ?? LANGS[0].code;
+}
+
 type Theme = "light" | "dark";
 
 function getCurrentTheme(): Theme {
   try {
     const saved = localStorage.getItem("theme");
     if (saved === "light" || saved === "dark") return saved;
-  } catch {}
+  } catch (error) {
+    console.warn("[theme] Failed to read saved theme", error);
+  }
   if (typeof document !== "undefined") {
     const fromHtml = document.documentElement.getAttribute("data-theme");
     if (fromHtml === "light" || fromHtml === "dark") return fromHtml as Theme;
@@ -31,7 +39,11 @@ function getCurrentTheme(): Theme {
 }
 function setTheme(next: Theme) {
   document.documentElement.setAttribute("data-theme", next);
-  try { localStorage.setItem("theme", next); } catch {}
+  try {
+    localStorage.setItem("theme", next);
+  } catch (error) {
+    console.warn("[theme] Failed to persist theme", error);
+  }
 }
 
 export default function SiteHeader() {
@@ -66,7 +78,8 @@ export default function SiteHeader() {
     };
   }, []);
 
-  const current = LANGS.find((l) => l.code === (lang as any)) ?? LANGS[0];
+  const currentLang = toLanguageCode(lang);
+  const current = LANGS.find((l) => l.code === currentLang) ?? LANGS[0];
 
   const NavItem = ({ href, k }: { href: string; k: string }) => (
     <Link
@@ -151,9 +164,12 @@ export default function SiteHeader() {
                   key={l.code}
                   type="button"
                   role="menuitemradio"
-                  aria-checked={lang === (l.code as any)}
-                  className={`lang-item ${lang === (l.code as any) ? "active" : ""}`}
-                  onClick={() => { setLang(l.code as any); setMenuOpen(false); }}
+                  aria-checked={lang === l.code}
+                  className={`lang-item ${lang === l.code ? "active" : ""}`}
+                  onClick={() => {
+                    setLang(l.code);
+                    setMenuOpen(false);
+                  }}
                 >
                   <span className="flag" aria-hidden>{l.flag}</span>
                   <span className="lang-label">{l.label}</span>

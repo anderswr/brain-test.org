@@ -167,5 +167,5 @@ export const MEMORY_QUESTIONS: Question[] = [
 
 // --- Answer key ---
 export const ANSWER_KEY_MEMORY: Record<string, number> = Object.fromEntries(
-  MEMORY_QUESTIONS.map((q) => [q.id, (q as any).correctIndex ?? -1])
+  MEMORY_QUESTIONS.map((q) => [q.id, "correctIndex" in q ? q.correctIndex : -1])
 );
